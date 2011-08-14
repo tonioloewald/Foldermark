@@ -1,8 +1,6 @@
 folder.mark -- The Instant CMS
 ==============================
 
-Note: this file is formatted using markdown.
-
 How to use folder.mark in Five Minutes
 --------------------------------------
 
