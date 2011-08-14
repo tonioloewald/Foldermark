@@ -422,6 +422,7 @@ div.ad a:hover {
 
 .page {
 	display: block;
+	padding-bottom: 10px;
 }
 
 .page + .page:before {
