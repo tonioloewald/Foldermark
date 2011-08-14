@@ -106,6 +106,11 @@
 			$parts = pathinfo( $path );
 			$ext = $parts['extension'];
 			
+			switch( $parts['filename'] ){
+				case 'favicon':
+					return;
+			}
+			
 			switch( $ext ){
 				case 'zip':
 				case 'pdf':
