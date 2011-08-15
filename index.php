@@ -252,8 +252,8 @@
 				$ext = $parts['extension'];
 				$title = filename_to_title( $parts['filename'] );
 				$modified_date = date("m/d/Y H:i:s", filemtime($path));
+				$include = '';
 				$text = '';
-				$code = '';
 				switch( $ext ){
 					case 'png':
 					case 'jpg':
@@ -291,14 +291,18 @@
 						$text = file_get_contents( $path );
 						break;
 					case 'php':
-						include( $path );
+						$include = $path;
+						break;
 				}
-				$code .= "<span class='page'>" . $text;
-				$code .= "<span class='title'>$title</span>\n";
-				$code .= "<span class='ext'>$ext</span>\n";
-				$code .= "<span class='last_modified'>$modified_date</span>\n";
-				$code .= "</span>\n";
-				echo $code;
+				echo "<span class='page'>";
+				echo $text;
+				if( $include ){
+					include( $include );
+				}
+				echo "<span class='title'>$title</span>\n"
+					. "<span class='ext'>$ext</span>\n"
+					. "<span class='last_modified'>$modified_date</span>\n"
+					. "</span>\n";
 			}
 			echo "</div>\n";
 		}
