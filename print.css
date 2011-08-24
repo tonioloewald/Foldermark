@@ -8,7 +8,7 @@ html {
 }
 
 body {
-	font-family: Cochin, Palatino, Book Antiqua, Serif;
+	font-family: Helvetica Neue, Helvetica, Arial, Sans-Serif;
 }
 
 #nav, #head, span.title, div.ad, #home_link, #home_link a, #home_link a:after, #breadcrumbs {
