@@ -176,6 +176,7 @@
 		}
 		
 		function render_navigation( $base = false, $page = false ){
+			
 			$render_div = !$base;
 			$base || $base = $this->base;
 			$page || $page = $this->page;
@@ -206,13 +207,14 @@
 					case 'folder.mark':
 						break;
 					default:						
-						$path = $base . rawurlencode( $item['name'] );
+						$path = $base . $item['name'];
 						$display_name = filename_to_title( $name );
 						if( $url == $base . $item['name'] .'/' ){
 							echo "<li><span class=\"current\">$display_name</span>";
 						} else {
 							echo "<li><a href=\"$path/\">$display_name</a>";
 						}
+						
 						if( $path . '/' == substr( $url, 0, strlen($path) + 1 ) ){
 							$this->render_navigation( $path . '/', substr($url, strlen($path) + 1 ) );
 						}

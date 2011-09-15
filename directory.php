@@ -183,6 +183,7 @@
 			}
 			
 			profile_end('directory->listing');
+			
 			return $listing;
 		}
 	}
