@@ -15,7 +15,7 @@
 	$base = $_GET['b'];
 	
 	if( isset($_GET['u']) ){
-		$page = $_GET['u'];
+		$page = url_to_path( $base, $_GET['u'] );
 	} else {
 		$page = false;
 	}
@@ -42,12 +42,58 @@
 	
 	function filename_to_title( $name ){
 		$t = explode( '_', $name, 2 );
+		// remove initial number part
 		$t = preg_replace( '/\A[0-9]+_/', '', $t );
+		// remove trailing slash
 		$t = preg_replace( '/\/\Z/', '', $t );
 		$t = array_pop( $t );
 		return preg_replace( '/[\-_]/', ' ', $t );
 	}
+	
+	function filename_to_url( $name ){
+		// remove initial number parts at each directory level
+		$t = preg_replace( '/\A[0-9]+_/', '', $name );
+		$t = preg_replace( '/\/[0-9]+_/', '/', $t );
+		// replace spacelike stuff with hyphens
+		$t = preg_replace( '/[_\s]+/', '-', $t );
+		return "$t";
+	}
+	
+	function url_to_path( $base, $url ){
+		$parts = explode( '/', $url );
+		$base = fixroot( $base );
+		$path = '';
 		
+		foreach( $parts as $part ){
+			$d = new FMdirectory( $base . $path );
+			$list = $d->listing( array( 
+				'show_folders' => true, 
+				'show_files' => false,
+				'detail' => 'simple_no_path'
+			) );
+			foreach( $list as $folder ){
+				if( fuzzy_url_match( $folder, $part ) ){
+					$path .= $folder . '/';
+					continue;
+				}
+			}
+		}
+		return $path;
+	}
+	
+	function fuzzy_url_match( $a, $b ){
+		if( $a == $b ){
+			return true;
+		}
+		return filename_to_url( $a ) == filename_to_url( $b );
+	}
+	
+	function render_link( $url, $title ){
+		$url = filename_to_url( $url );
+		$title = filename_to_title( $title );
+		echo "<a href=\"$url\">$title</a>";
+	}
+	
 	function directory_sort_alpha( $a, $b ){
 		return strcmp( $a['name'], $b['name'] );
 	}
@@ -155,7 +201,7 @@
 		function render_breadcrumbs(){
 			echo "<div id='head'><div id='breadcrumbs'>\n";
 			if( $this->page ){
-				echo "<a href=\"{$this->base}\">{$this->sitename}</a> ";
+				render_link( $this->base, $this->sitename );
 				$breadcrumbs = $this->page;
 				if( substr( $breadcrumbs, 0, 1 ) == '/' ){
 					$breadcrumbs = substr($breadcrumbs, 1 );
@@ -167,8 +213,8 @@
 				$current = filename_to_title( array_pop( $breadcrumbs ) );
 				$url = $this->base;
 				foreach( $breadcrumbs as $crumb ){
-					$url .= $crumb . '/';
-					echo "<a href='$url'>" . filename_to_title($crumb) . '</a>';
+					$url .= filename_to_url( $crumb ) . '/';
+					render_link( $url, $crumb );
 				}
 				echo "<span class=\"current\">$current</span>";
 			} else {
@@ -214,7 +260,8 @@
 						if( $url == $base . $item['name'] .'/' ){
 							echo "<li><span class=\"current\">$display_name</span>";
 						} else {
-							echo "<li><a href=\"$path/\">$display_name</a>";
+							echo '<li>'; // <a href=\"$path/\">$display_name</a>";
+							render_link( $path, $display_name );
 						}
 						
 						if( $path . '/' == substr( $url, 0, strlen($path) + 1 ) ){
