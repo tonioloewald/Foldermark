@@ -175,6 +175,7 @@ a:active {
 	color: @text_color;
 	background-color: @page_color;
 	margin-right: 0;
+	border-bottom: 1px solid @page_color * 0.5;
 }
 
 #nav a:hover, form a:hover {
@@ -241,18 +242,20 @@ hr {
 	color: @text_color;
 	background-color: @page_color;
 	padding: 2px 6px 5px 6px;
+	border-right: 1px solid @page_color * 0.5;
 }
 
 #breadcrumbs a {
 	color: @inverse_text_color;
 	text-decoration: none;
 	border: 0;
+	padding: 2px 5px 5px 5px;
 	margin-right: 10px;
 }
 
 #breadcrumbs a:hover {
 	color: #222;
-	background: transparent;
+	background-color: @page_color * 0.5 + @mid_color * 0.5;
 }
 
 #content {
@@ -265,6 +268,8 @@ hr {
 	line-height: 20px;
 	left: 50%;
 	z-index: 1;
+	border-right: 1px solid @page_color * 0.5;
+	border-bottom: 1px solid @page_color * 0.5;
 }
 
 ul, ol {
@@ -497,9 +502,11 @@ div.ad a:hover {
 	background-color: @bright_color;
 	border-bottom: 1px solid @dark_color * 0.5;
 	text-align: center;
-	font-size: 30px;
+	text-shadow: @dark_color 1px 1px 1px;
+	font-size: 60px;
 	line-height: 110px;
 	font-style: italic;
+	font-weight: bold;
 }
 
 #home_link a:hover {
