@@ -42,6 +42,8 @@
 	
 	function filename_to_title( $name ){
 		$t = explode( '_', $name, 2 );
+		$t = preg_replace( '/\A[0-9]+_/', '', $t );
+		$t = preg_replace( '/\/\Z/', '', $t );
 		$t = array_pop( $t );
 		return preg_replace( '/[\-_]/', ' ', $t );
 	}
@@ -71,7 +73,7 @@
 			$this->page = $page;
 			$this->sitename = $sitename;
 			if( $page ){
-				$this->title = $sitename . ' &gt; ' . rawurldecode( $page );
+				$this->title = $sitename . ' &gt; ' . filename_to_title( $page );
 				$this->folder = $base . $page;
 			} else {
 				$this->title = $sitename;
