@@ -172,7 +172,7 @@ a:active {
 }
 
 #nav .current {
-	color: @text_color;
+	color: @mid_color;
 	background-color: @page_color;
 	margin-right: 0;
 	border-bottom: 1px solid @page_color * 0.5;
@@ -239,7 +239,7 @@ hr {
 }
 
 #breadcrumbs .current {
-	color: @text_color;
+	color: @mid_color;
 	background-color: @page_color;
 	padding: 2px 6px 5px 6px;
 	border-right: 1px solid @page_color * 0.5;
@@ -254,8 +254,12 @@ hr {
 }
 
 #breadcrumbs a:hover {
-	color: #222;
+	color: @mid_color;
 	background-color: @page_color * 0.5 + @mid_color * 0.5;
+}
+
+#breadcrumbs a:active {
+	color: @inverse_text_color;
 }
 
 #content {
