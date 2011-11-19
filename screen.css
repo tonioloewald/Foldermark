@@ -33,6 +33,7 @@
 body {
 	font-family: Helvetica Neue, Helvetica, Arial, Sans-serif;
 	background-color: @bg_color;
+	background-image: url(bgpattern.png);
 	font-size: 0.9em;
 	-webkit-transition: all 0.5s ease-out;
 }
@@ -218,6 +219,7 @@ hr {
 	font-weight: bold;
 	color: #000;
 	background-color: @mid_color;
+	background-image: url(bgpattern.png);
 	position: absolute;
 	top: 80px;
 	height: 30px;
@@ -504,6 +506,7 @@ div.ad a:hover {
 	padding: 0;
 	color: @inverse_text_color;
 	background-color: @bright_color;
+	background-image: url(bgpattern.png);
 	border-bottom: 1px solid @dark_color * 0.5;
 	text-align: center;
 	text-shadow: @dark_color 1px 1px 1px;
