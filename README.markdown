@@ -69,6 +69,14 @@ Items are output in alphabetical order by filename, but item names omit anything
 underscore separater, so if you want "foo.txt" to appear before "alpha.txt", renaming it to "0_foo" will
 do the trick (and it will still appear as "foo".
 
-(The underlying idea is the "0_foo bar baz" will appear as "foo bar baz" and have the URL "foo-bar-baz"
-and the link will keep on working if you change the name to "2_foo bar baz". The last bit hasn't
-been implemented yet.)
+URLs are now rendered nicely and fuzzy matched so that:
+
+1. Initial numerical parts are ignored (so 00_foo and 123_foo are the same thing)
+2. Underscores and whitespace become hyphens in page links (so 123_foo bar becomes foo-bar)
+
+This means that changing the numerical part of a folder name to reorder it (or adding it) will
+not break links, and that urls should be generated in the way google recommends for SEO (i.e.
+"123_This is the_first" becomes "This-is-the-first".
+
+A small number of simple functions handle urls so if you want your urls to be case insensitive,
+for example, it would be easy to add that feature.
