@@ -289,7 +289,7 @@
 		function render_content(){
 			echo "<div id='content'>\n";
 			
-			dump( $_GET );
+			// dump( $_GET );
 				
 			if( $this->error ){
 					$text = file_get_contents( $path );
