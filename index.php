@@ -1,5 +1,11 @@
 <?php
-	/* Copyright 2005-2011 Tonio Loewald */
+	/*
+		Copyright 2005-2011 Tonio Loewald 
+		
+		For more information visit:
+		https://github.com/tonioloewald/Foldermark
+		http://foldermark.com/
+	*/
 	
 	define( 
 		'APP_ROOT', 
@@ -90,6 +96,9 @@
 	
 	function render_link( $url, $title ){
 		$url = filename_to_url( $url );
+		if( substr( $url, -1 ) != '/' ){
+			$url .= '/';
+		}
 		$title = filename_to_title( $title );
 		echo "<a href=\"$url\">$title</a>";
 	}
@@ -213,7 +222,7 @@
 				$current = filename_to_title( array_pop( $breadcrumbs ) );
 				$url = $this->base;
 				foreach( $breadcrumbs as $crumb ){
-					$url .= filename_to_url( $crumb ) . '/';
+					$url .= filename_to_url( $crumb );
 					render_link( $url, $crumb );
 				}
 				echo "<span class=\"current\">$current</span>";
@@ -278,7 +287,10 @@
 		}
 		
 		function render_content(){
-			echo "<div id='content'>\n";		
+			echo "<div id='content'>\n";
+			
+			dump( $_GET );
+				
 			if( $this->error ){
 					$text = file_get_contents( $path );
 					$text = str_replace( 
