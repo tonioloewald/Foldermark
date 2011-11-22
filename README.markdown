@@ -15,7 +15,7 @@ How to use folder.mark in Five Minutes
 	Options +FollowSymLinks 
 	RewriteEngine On
 	
-	RewriteRule ^([^\.]*)$ <b>/path/to/folder.mark/</b>?h=site_name=<b>/path/to/content/</b>&u=$1 [NC]
+	RewriteRule ^([^\.]*)$ <b>/path/to/folder.mark/</b>?h=site_name=<b>/path/to/content/</b>&u=$1 [L]
 	</pre>
 	
 	__Note__: both paths are web-root relative.
