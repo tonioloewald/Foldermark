@@ -4,12 +4,28 @@
 	
 	Very much a work-in-progress
 	
-	Does not yet implement the basic navigation elements.
+	To do
+	-----
 	
-	Differences between the PHP and node.js implementations are not documented.
+	figure out what else needs to be on this to do list
+	wrap contents in divs/spans for css to work on
+	wrap css declarations in media types
+	nav menu
+	breadcrumbs
+	render non-html/markdown elements of pages
+	document differences between php and node.js versions
+	decide which is canonical
+	deploy node.js version via heroku?
+	dropbox integration?
+	redo CSS to produce one of those trendy horizontal layouts ;-)
 	
-	Eventually one of these two versions will become canonical and the other deprecated
-	depending on which one is easier to deploy.
+	Optimization Possibilities
+	--------------------------
+	
+	reduce number of synchronous calls in page renderer (?)
+	cache url lookups (because it's so easy to do in node.js)
+	cache page assembly metadata
+	cache rendered pages
 */
 
 var http = require('http');
