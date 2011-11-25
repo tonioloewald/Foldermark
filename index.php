@@ -47,12 +47,11 @@
 	}
 	
 	function filename_to_title( $name ){
-		$t = explode( '_', $name, 2 );
 		// remove initial number part
-		$t = preg_replace( '/\A[0-9]+_/', '', $t );
+		$t = preg_replace( '/\A[0-9]+_/', '', $name );
 		// remove trailing slash
 		$t = preg_replace( '/\/\Z/', '', $t );
-		$t = array_pop( $t );
+		// $t = array_pop( $t );
 		return preg_replace( '/[\-_]/', ' ', $t );
 	}
 	
