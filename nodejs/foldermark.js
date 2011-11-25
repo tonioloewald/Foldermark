@@ -1,3 +1,17 @@
+/*
+	folder.mark ported to node.js
+	Copyright (c)2011 Tonio Loewald
+	
+	Very much a work-in-progress
+	
+	Does not yet implement the basic navigation elements.
+	
+	Differences between the PHP and node.js implementations are not documented.
+	
+	Eventually one of these two versions will become canonical and the other deprecated
+	depending on which one is easier to deploy.
+*/
+
 var http = require('http');
 var fs = require('fs');
 var path = require('path');
