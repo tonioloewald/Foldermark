@@ -202,6 +202,7 @@
 		function render_head(){
 			echo "<!DOCTYPE html>\n";
 			echo "<head><title>{$this->title}</title>\n";
+			echo "<meta charset='utf-8'>";
 			$this->render_styles();
 			echo "</head>\n<body>\n";
 		}
