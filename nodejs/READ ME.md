@@ -1,7 +1,7 @@
 Folder.mark 2.0
 ===============
 
-Note that the features described here are the implementation target, and many do not yet exist.
+Note that the features described here are the implementation target, and those marked TODO (and possibly others) are not yet implemented..
 
 Currently the nodejs implementation is closer to the spec than the PHP version.
 
