@@ -8,7 +8,8 @@ Currently the nodejs implementation is closer to the spec than the PHP version.
 Key Improvements
 ----------------
 
-* Rewritten for **nodejs** (but still works with **PHP**)
+* Rewritten for **nodejs** (TODO: will back port as much as possible to **PHP**)
+* More work off-loaded to client-side (Javascript) means that the server-side implementation is both simpler and lighter-weight.
 * Easily extensible via *Javascript* plugins
 * Does not require a database
 * All content is served *statically*
