@@ -1,8 +1,17 @@
-{
-    "name": "admin"
-    "password": "5f4dcc3b5aa765d61d8327deb882cf99",
-    "privileges": [
-        "access-control",
-        "global-edit"
-    ]
-}
+[
+    {
+        "name": "admin"
+        "password": "5f4dcc3b5aa765d61d8327deb882cf99",
+        "privileges": [
+            "access-control",
+            "global-edit"
+        ]
+    },
+    {
+        "name": "peon"
+        "password": "5f4dcc3b5aa765d61d8327deb882cf99",
+        "privileges": [
+            "/peon-home-page"
+        ]
+    }
+]
