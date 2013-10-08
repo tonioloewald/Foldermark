@@ -64,13 +64,14 @@ Links are fuzzy-matched to content directories (in the PHP version) and all file
 * Leading order indicators (##_ at the beginning of file/directory names) are ignored.
 * All whitespace runs are replaced with single hyphens. (So "foo   bar" -> "foo-bar".)
 * **TODO**: Everything between the first and last periods in a file name are ignored. (The idea here is to make these things into "marks" for plugins, etc. to utilize without breaking links)
+* Text is converted to lowercase.
 
 E.g. 
 
 * important page -> important-page
 * 100_test case.jpg -> test-case.jpg
 * test case.inherit.hidden.jpg -> test-case.jpg
-* 666_foo -> foo
+* 666_FOO -> foo
 
 When attempting to serve a page (or, in nodejs, a content file) the object whose reduced filename is **exactly matched**, if it exists, will be served. E.g. /10_foo/20_bar baz -> /foo/bar-baz -- a page whose reduced name exactly matches this will be served; it could be /10_foo/20_bar baz, but it could also be /37_foo/bar-baz.
 
