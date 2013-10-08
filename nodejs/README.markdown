@@ -16,6 +16,7 @@ Key Improvements
 * Streaming (nodejs) all content is automagically streamed where appropriate
 * **TODO**: **Edit your site online** effortlessly (even on mobile devices)
 * **TODO**: inheritance
+* **TODO**: detect file changes outside foldermark's purview and update internal indices automagically (perhaps using https://github.com/paulmillr/chokidar)
 
 Setup
 -----
