@@ -12,28 +12,25 @@ Key Improvements
 * Easily extensible via *Javascript* plugins
 * Does not require a database
 * All content is served *statically*
+* Streaming (nodejs) all content is automagically streamed where appropriate
 * **TODO**: **Edit your site online** effortlessly (even on mobile devices)
 * **TODO**: inheritance
 
 Core Concepts
 -------------
 
-Every web page is served as the same page ("effectively index.html") but with a different anchor (e.g. #this/that/the-other).
+Every web page is served as the same page ("effectively index.html") but with a different internal URL. Once a page is loaded, content is loaded via AJAX and the browser history is updated in code (so history should Just Work).
 
-The app considers the urls http://site.com/foo/bar (conventional) and http://site.com#foo/bar (hashtag style) to be equivalent. The advantage of #foo/bar is that the app behaves as a single page app, only loading the basic page structure and javascript code once. Which url style the application generates internally as links is a configuration option -- the default is hashtag style.
+**The site URL is requested as fm.json inside the page directory** (e.g. "/foo/bar/" is requested as "/foo/bar/fm.json").
 
-**The anchor is translated into an AJAX call** (e.g. "http://siteroot.com/?p=this/that/the-other").
+**fm.json comprises an array of parts of the page**. The page then renders the content on the client-side.
 
-**The AJAX call returns a JSON manifest of the page content**. The page then renders the content on the client-side.
+    [
+        <string>, // e.g. "/foo/bar/image.png"
+        …
+    ]
 
-    {
-        title: <string>
-        parts: [
-            <string>, … // urls of page (folder) content other than sub-pages
-        ]
-    }
-
-The page also (once) makes a call requesting the **site manifest**. The page uses this manifest to render navigation links.
+The page also (once) makes a call requesting the **site map** (/site/root/fm-sitmap.json). The page uses this to render navigation links.
 
     {
         site_name: <string>,
@@ -56,8 +53,8 @@ Fuzzy Link Matching
 Links are fuzzy-matched to content directories (in the PHP version) and all files (in the nodejs version). URL requests and file paths are **reduced** using the following rules:
 
 * Leading order indicators (##_ at the beginning of file/directory names) are ignored.
-* All whitespace strings are replaced with hyphens.
-* Everything between the first and last periods in a file name are ignored.
+* All whitespace runs are replaced with single hyphens. (So "foo   bar" -> "foo-bar".)
+* **TODO**: Everything between the first and last periods in a file name are ignored. (The idea here is to make these things into "marks" for plugins, etc. to utilize without breaking links)
 
 E.g. 
 
@@ -67,6 +64,9 @@ E.g.
 * 666_foo -> foo
 
 When attempting to serve a page (or, in nodejs, a content file) the object whose reduced filename is **exactly matched**, if it exists, will be served. E.g. /10_foo/20_bar baz -> /foo/bar-baz -- a page whose reduced name exactly matches this will be served; it could be /10_foo/20_bar baz, but it could also be /37_foo/bar-baz.
+
+
+###TODO: automatic handling of broken links resulting from major site reorganization
 
 Failing this, any file whose **reduced name matches the beginning of the requested page** (or content file) will be served. E.g. if the the page /foo/bar/baz is requested but does not exist, /foo/bar might be returned instead.
 
@@ -101,12 +101,14 @@ E.g.
 Plugins
 -------
 
+**TODO**: needs examples, e.g. blog, slideshow, carousel or custom video player.
+
 To add custom code to a page, simply put the javascript file in a folder. If you want the file to appear in every sub-page, add .inherit (before .js) in its name, so myplugin.inherit.js will load into all subpages of the page in which it appears.
 
 If files or folders are given a custom extension (e.g. .slideshow) then the url will appear in the contents directory. Your custom javascript plugin can do with this what it will. If your plugin makes a service call against the url it will get the content of the file and a JSON manifest of a directory (e.g. if you put pictures in "vacation.slideshow" you'd get back an array of urls of the images inside).
 
-Admin Access
-------------
+TODO: Admin Access
+------------------
 
 Admin Access is controlled by a simple JSON file named users.json (this file is outside the content tree!). If no users.json file is present, then the only way to edit pages is by modifying files on the server directly.
 
