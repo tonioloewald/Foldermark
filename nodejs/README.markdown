@@ -17,6 +17,14 @@ Key Improvements
 * **TODO**: **Edit your site online** effortlessly (even on mobile devices)
 * **TODO**: inheritance
 
+Setup
+-----
+
+1. Modify config.json so that the name, content_root, and port are correct for your installation.
+2. "node foldermark.js"
+
+Right now you need to kill foldermark.js and relaunch it if you modify the content on the site.
+
 Core Concepts
 -------------
 
