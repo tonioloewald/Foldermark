@@ -32,30 +32,142 @@ var http = require('http');
 var fs = require('fs');
 var path = require('path');
 var url = require('url');
-var showdown = require('./lib/showdown');
-var converter = new showdown.converter();
+var config;
+var nav_root;
+var nav_tree_locks = 0;
 
-var config = {
-	content : '/Users/tal/Sites/fmtest',
-	site_name : 'folder.mark',
-	css : [
-		'/folder.mark/screen.css',
-		'/folder.mark/print.css'
-	],
-	js : [
-		'/folder.mark/lib/jquery.js',
-		'/folder.mark/lib/av.js',
-		'/folder.mark/lib/less.js'
-	]
-}
-
-function render_error( err, msg ){
+function fatal_error( res, err, msg ){
 	if( msg == undefined ){
 		msg = 'not specified';
 	}
-	console.log('Error: ' + msg );
+	console.log('Error', err, msg );
 	res.writeHead(500, {'Content-Type': 'text/plain' });
 	res.end( 'Application Error' );
+}
+
+function nonfatal_error( res, err_number, msg ){
+    res.writeHead(err_number, {'Content-Type': 'text/plain'});
+    res.end( msg );
+}
+
+function fuzz_path( path ){
+    return path.replace(/[^\/]\w*_/g, '').replace(/\s+/g, '-').toLowerCase();
+}
+
+function build_nav_tree( page, callback ){
+    nav_tree_locks++;
+    
+    function child_adder( child ){
+        return function( err, stats ){
+            if( err || !stats ){
+                // TODO: error handling
+            } else if ( stats.isDirectory() ){
+                if( page.pages === undefined ){
+                    page.pages = [];
+                }
+                page.pages.push( child );
+                build_nav_tree( child, callback );
+            } else {
+                if( page.parts === undefined ){
+                    page.parts = [];
+                }
+                page.parts.push( child );
+            }
+	        nav_tree_cleanup( callback );
+        };
+    }
+
+	fs.readdir( config.content_root + page.path, function( err, files ){
+	    if( err || !files.length ){
+	        return;
+	    }
+	    
+	    var i, file, child, path, full_path;
+	    
+	    files.sort();
+	    for( i = 0; i < files.length; i++ ){
+	        file = files[i];
+	        if( file.substr(0,1) !== '.' ){
+	            path = page.path + '/' + file;
+	            full_path = config.content_root + path;
+                nav_root.path_list[ fuzz_path( path ) ] = full_path;
+	            if( file !== 'fm.json' && file !== 'fm-sitemap.json' ){
+                    child = {
+                        path: path,
+                        name: fuzz_path( file )
+                    };
+                    nav_tree_locks++;
+                    fs.stat( full_path, child_adder( child ) );
+	            }
+	        }
+	    }
+	    
+	    nav_tree_cleanup( callback );
+	});
+}
+
+function save_text_file( path, content ){
+    fs.writeFile( path, content, function(err) {
+        if(err) {
+            console.log(err);
+        } else {
+            console.log(path, 'saved');
+        }
+    });
+}
+
+function write_page_data( page ){
+    var path = config.content_root + page.path + '/fm.json',
+        i,
+        parts = [];
+
+    if( page.parts ){
+        for( i = 0; i < page.parts.length; i++ ){
+            parts.push( fuzz_path( page.parts[i].path ) );
+        }
+        save_text_file(path, JSON.stringify(parts))
+    }
+    
+    if( page.pages ){
+        for( i = 0; i < page.pages.length; i++ ){
+            write_page_data( page.pages[i] );
+        }
+    }
+}
+
+function sitemap( node ){
+    var i, 
+        pages = [], 
+        map = { 
+            name: node.name,
+            path: fuzz_path( node.path )
+        };
+    
+    if( node.pages ){
+        for( i = 0; i < node.pages.length; i++ ){
+            pages.push( sitemap( node.pages[i] ) );
+        }
+        map.pages = pages;
+    }
+    
+    return map;
+}
+
+function nav_tree_cleanup( callback ){
+    nav_tree_locks--;
+    if( nav_tree_locks === 0 ){
+        console.log( "Nav Tree Built" );
+        console.log( JSON.stringify( nav_root, false, 2) );
+        if( typeof callback === 'function' ){
+            callback();
+        }
+        
+        write_page_data( nav_root );
+        
+        save_text_file( config.content_root + '/fm-sitemap.json', JSON.stringify( sitemap( nav_root) ) );
+    } else if ( nav_tree_locks < 0 ){
+        console.error( "Negative nav tree locks???", nav_tree_locks );
+    }
 }
 
 /*
@@ -63,24 +175,33 @@ function render_error( err, msg ){
 	http://elegantcode.com/2011/04/06/taking-baby-steps-with-node-js-pumping-data-between-streams/
 */
 function stream_response( res, file_path, content_type ){
-	var readStream = fs.createReadStream(file_path);
-	
-	res.writeHead(200, {'Content-Type': content_type});
-	readStream.on('data', function(data) {
-		var flushed = res.write(data);
-		// Pause the read stream when the write stream gets saturated
-		if(!flushed)
-				readStream.pause();
-	});
-	
-	res.on('drain', function() {
-		// Resume the read stream when the write stream gets hungry 
-		readStream.resume();
-	});
-	
-	readStream.on('end', function() {
-		res.end();
-	});
+    var readStream = fs.createReadStream(file_path);
+
+    readStream.on('data', function(data) {
+        var flushed = res.write(data);
+        // Pause the read stream when the write stream gets saturated
+        // console.log( 'streaming data', file_path );
+        if(!flushed){
+            readStream.pause();
+        }
+    });
+
+    res.on('drain', function() {
+        // Resume the read stream when the write stream gets hungry 
+        readStream.resume();
+    });
+
+    readStream.on('end', function() {
+        res.end();
+    });
+    
+    readStream.on('error', function(err) {
+        console.error('Exception', err, 'while streaming', file_path);
+        // TODO: remove from file_paths
+        res.end();
+    });
+    
+    res.writeHead(200, {'Content-Type': content_type});
 }
 
 function render_response( res, file_path ){
@@ -89,7 +210,7 @@ function render_response( res, file_path ){
 	
 	fs.readFile(file_path, 'utf8', function (err, data) {
 		if (err) {
-			render_error(err, 'could not render ' + file_path);
+			fatal_error(res, err, 'could not render ' + file_path);
 		} else {
 			html = converter.makeHtml( data );
 			res.writeHead(200, {'Content-Type': 'text/html' });
@@ -98,216 +219,160 @@ function render_response( res, file_path ){
 	});	
 }
 
-// given a page path, render the page
-function render_response_page( res, path ){
-	var path_parts = path.split('/');
-	if( path_parts[0] == '' ){
-		path_parts.shift();
-	}
-	if( path_parts.length && path_parts[ path_parts.length - 1 ] == '' ){
-		path_parts.pop();
-	}
-	var page_spec = {
-		path_parts : path_parts,
-		actual_path : config.content,
-		title : config.site_name,
-		css : config.css,
-		js : config.js,
-		content : [],
-		children : []
-	}
-	assemble_page( res, page_spec );
+/*
+    Render the web page!
+    
+    <!DOCTYPE html><html lang="en"><head><meta charset="utf-8" /><title>
+    {title}
+    </title>
+    {css}
+    </head><body>
+    {script}
+    </body></html>
+*/
+function render_index_page( res, path ){
+    var html = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" /><title>folder.mark</title>',
+        stylesheet,
+        script;
+        
+    for( var i = 0; i < config.css.length; i++ ){
+        stylesheet = config.css[i];
+        if( stylesheet.indexOf('print') >= 0 ){
+            html += '<link rel="stylesheet/less" type="text/css" media="print" href="' + stylesheet + '">';
+        } else {
+            html += '<link rel="stylesheet/less" type="text/css" media="screen" href="' + stylesheet + '">';
+        }
+    }
+    html += "</head><body>";
+    html += '<div id="home"></div>';
+    html += '<div id="nav"></div>';
+    html += '<div id="head"></div>';
+    html += '<div id="content"></div>';
+    for( var i = 0; i < config.js.length; i++ ){
+        script = config.js[i];
+        html += '<script src="' + script + '"></script>';
+    }
+    html += '<script>fm.loadPage("' + path + '");</script>';
+    html += '</body></html>';
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.end( html );
 }
 
-function part_to_title( file ){
-	return file.replace(/^\d+_/,'').replace(/[\s_]/,' ');
+function render_page_data( res, page_path ){
+    res.writeHead(200, {'Content-Type': 'application/json' });
+    res.end( JSON.stringify({test: page_path}) );
 }
 
-function part_to_url( file ){
-	return file.replace(/^\d+_/,'').replace(/[\s_]/,'-').toLowerCase();
-}
-
-function assemble_page( res, page_spec ){
-	var folder;
-	var new_path = false;
-	var file, file_path, stat, name;
-
-	if( page_spec.path_parts.length == 0 ){
-		fs.readdir( page_spec.actual_path, function( err, files ){
-			if( err ){
-				render_error( err, 'could not render ' + page_spec.actual_path );
-			} else {
-				var i;
-				var html = '<!doctype html><html><head><title>' + page_spec.title + '</title>';
-				for( i = 0; i < files.length; i++ ){
-					file = files[i];
-					if( file.substr(0,1) == '.' ){
-						continue;
-					}
-					file_path = path.join( page_spec.actual_path, file);
-					stat = fs.statSync( file_path );
-					if( stat.isDirectory() ){
-						// collect children
-						page_spec.children.push( file );
-					} else {
-						switch( path.extname( file ) ){
-							case '.js':
-								page_spec.js.push( file_path );
-								break;
-							case '.css':
-								page_spec.css.push( file_path );
-								break;
-							case '.txt':
-							case '.markdown':
-							case '.md':
-								page_spec.content.push( converter.makeHtml( fs.readFileSync( file_path, 'utf8' ) ) );
-								break;
-							case '.html':
-								page_spec.content.push( fs.readFileSync( file_path, 'utf8' ) );
-								break;
-							default:
-						}
-					}
-				}
-				for( i = 0; i < page_spec.css.length; i++ ){
-					html += "<link rel='stylesheet/less' type='text/css' media='print' href='" + page_spec.css[i] +"'>";
-				}
-				html += '</head><body>';
-				html += '<ul>';
-				for( i = 0; i < page_spec.children.length; i++ ){
-					file = page_spec.children[i];
-					html += '<li><a href="' + part_to_url( file ) + '">' 
-						+ part_to_title( file ) + '</a></li>';
-				}
-				html += '</ul>';
-				for( i = 0; i < page_spec.content.length; i++ ){
-					html += page_spec.content[i];
-				}
-				for( i = 0; i < page_spec.js.length; i++ ){
-					html += "<script type='text/javascript' src='" + page_spec.js[i]; + '"></script>';
-				}
-				html += '</body></html>';
-				res.writeHead(200, {'Content-Type': 'text/html'});
-				res.end( html );
-			}
-		} );
-	} else {
-		folder = page_spec.path_parts.shift();
-		fs.readdir( page_spec.actual_path, function( err, files ){
-			if( err ){
-				render_error( err, 'could not assemble ' + page_spec.actual_path );
-			} else {
-				files.sort();
-				for( var i = 0; i < files.length; i++ ){
-					file = files[i];
-					if( file.substr(0,1) == '.' ){
-						continue;
-					}
-					file_path = path.join( page_spec.actual_path, file );
-					stat = fs.statSync( file_path );
-					if( stat.isDirectory() ){
-						name = part_to_url( file );
-						if( name == folder ){
-							new_path = file_path;				
-							if( page_spec.path_parts.length == 0 ){
-								page_spec.title = part_to_title( file );
-							}
-						}
-					} else {
-						// can implement js and css inheritance here later
-						switch( path.extname( file ) ){
-							case '.js':
-								break;
-							case '.css':
-								break;
-							default:
-						}
-					}
-				}
-				if( new_path ){
-					page_spec.actual_path = new_path;
-					assemble_page( res, page_spec );
-				} else {
-					res.writeHead(404, {'Content-Type': 'text/plain'});
-					res.end( 'File Not Found (' + page_spec.actual_path + '/' + folder + ')' );
-				}
-			}
-		} );
-	}
-}
-
-function handle_file_request( res, file_path, file_type ){
+function handle_file_request( req, res, file_path, file_type ){
+    var stream_type = false;
 	switch( file_type ){
+	    case '.fm':
+	        console.log( 'page data request', file_path );
+	        render_page_data( res, file_path );
+	        break;
 		case '.pdf':
-			stream_response( res, file_path, 'application/pdf' );
+			stream_type = 'application/pdf';
 			break;
 		case '.zip':
-			stream_response( res, file_path, 'application/zip' );
+	    case '.msi':
+	    case '.dmg':
+			stream_type = 'application/zip';
 			break;
+		case '.map':
 		case '.json':
-			stream_response( res, file_path, 'application/json' );
+			stream_type = 'application/json';
 			break;
 		case '.js':
-			stream_response( res, file_path, 'application/javascript' );
+			stream_type = 'application/javascript';
 			break;
+		case '.htm':
 		case '.html':
-			stream_response( res, file_path, 'text/html' );
+			stream_type = 'text/html';
 			break;
 		case '.txt':
-			stream_response( res, file_path, 'text/plain' );
-			break;
+		case '.text':
 		case '.md':
 		case '.markdown':
-			render_response( res, file_path );
+			stream_type = 'text/plain';
 			break;
 		case '.jpg':
-			stream_response( res, file_path, 'image/jpeg' );
+			stream_type = 'image/jpeg';
 			break;
 		case '.gif':
-			stream_response( res, file_path, 'image/gif' );
+			stream_type = 'image/gif';
 			break;
 		case '.png':
-			stream_response( res, file_path, 'image/png' );
+			stream_type = 'image/png';
 			break;
 		case '.mp4':
-			stream_response( res, file_path, 'video/mp4' );
+			stream_type = 'video/mp4';
 			break;
 		case '.mp3':
-			stream_response( res, file_path, 'audio/mpeg' );
+			stream_type = 'audio/mpeg';
 			break;
 		case '.mov':
 		case '.qt':
-			stream_response( res, file_path, 'video/quicktime' );
+		case '.mp4':
+		case '.m4v':
+			stream_type = 'video/quicktime';
 			break;
 		case '.css':
-			stream_response( res, file_path, 'text/css' );
+		case '.less':
+			stream_type = 'text/css';
 			break;
 		default:
-			res.writeHead(400, {'Content-Type': 'text/plain'});
-			res.end( 'Bad Request (' + file_type + ')' );
+            nonfatal_error( res, 400, 'Bad Request (' + file_type + ')' );
+	}
+	if( stream_type ){
+		stream_response( res, file_path, stream_type );
 	}
 }
 
-http.createServer( function( req, res ){
-	var request_url = url.parse( req.url, true );
-	var request_path = path.join( config.content, path.normalize( request_url.pathname ) );
-	var request_type = path.extname( request_path );
-	if( request_type == '' ){
-		/*
-		res.writeHead(200, {'Content-Type': 'text/plain'});
-		res.end( request_url.pathname );
-		*/
-		render_response_page( res, request_url.pathname );
-	} else {
-		path.exists( request_path, function( found ){
-			if( found ){
-				handle_file_request( res, request_path, request_type );
-			} else {
-				res.writeHead(404, {'Content-Type': 'text/plain'});
-				res.end( 'File Not Found (' + request_path + ')' );
-			}
-		} );
-	}
-}).listen(8124, '127.0.0.1');
-console.log('Server running at http://127.0.0.1:8124/');
+fs.readFile('config.json', function(err, data){
+    if( err ){
+        throw err;
+    }
+    
+    config = JSON.parse( data );
+    console.log( JSON.stringify( config, false, 2 ) );
+    nav_root = {
+        path: "",
+        name: config.name,
+        path_list: {}
+    };
+    
+    build_nav_tree( nav_root );
+    
+    http.createServer( function( req, res ){
+        var request_url = url.parse( req.url, true );
+        var pathname = fuzz_path( request_url.pathname );
+        var request_path = pathname.substr(0,8) === '/fm/lib/' 
+                            ? pathname.substr(4)
+                            : config.content_root + path.normalize( pathname );
+        var request_type = path.extname( request_path );
+        var actual_path;
+        
+        if( !request_type ){
+            render_index_page( res, request_url.pathname );
+        } else {
+            if( actual_path = nav_root.path_list[ pathname ] ){
+                console.log( "cached path for", pathname, 'at', actual_path );
+                handle_file_request( req, res, actual_path, request_type );
+            } else {
+                // TODO: add /lib/ files to the path_list so this async call isn't needed
+                fs.exists( request_path, function( found ){
+                    if( found ){
+                        console.log( "found", pathname, 'at', request_path);
+                        nav_root.path_list[ pathname ] = request_path;
+                        handle_file_request( req, res, request_path, request_type );
+                    } else {
+                        console.log(request_path, 'not found');
+				        nonfatal_error( res, 404,  'File Not Found (' + request_url.pathname + ')' );
+                    }
+                }); 
+            }
+        }
+    }).listen(config.port, '127.0.0.1');
+    console.log('Server running at http://127.0.0.1:' + config.port + '/');
+});
 

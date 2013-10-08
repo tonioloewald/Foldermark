@@ -1,0 +1,111 @@
+@page {
+	margin: 0.75in;
+}
+
+html {
+	background: white;
+	color: black;
+	font-family: "Helvetica Neue", Helvetica, Arial, Sans-serif;
+	font-size: 12px;
+}
+
+h1 {
+    font-size: 20px;
+    color: rgb(52,90,138);
+}
+
+h2 {
+    font-size: 16px;
+    color: rgb(79,129,189);
+}
+
+h3, h4 {
+    font-size: 13px;
+    color: rgb(79,129,189);
+}
+
+h5, h6 {
+    font-size: 12px;
+    color: rgb(36,63,96);
+}
+
+h4, h6 {
+    font-style: italic;
+}
+
+b, strong, i, emphasis {
+    color: rgb(79,129,189);
+}
+
+body {
+	font-family: Helvetica Neue, Helvetica, Arial, Sans-Serif;
+}
+
+#nav, #head, span.title, div.ad, #home_link, #home_link a, #home_link a:after, #breadcrumbs {
+	display: none;
+}
+
+code, pre {
+	font-family: Menlo, Monaco, Courier New, Monospace;
+}
+
+pre {
+	border-left: 2px solid rgb(79,129,189);
+    color: rgb(36,63,96);
+	padding-left: 10px;
+}
+
+table {
+	border-collapse: collapse;
+	border: 1px solid #ddd;
+}
+
+th, td {
+	padding: 2px 6px;
+	vertical-align: top;
+}
+
+td {
+	text-align: center;
+}
+
+th {
+    color: white;
+    background: rgb(52,90,138);
+}
+
+.last_modified:before {
+	content: "Last Modified: "
+}
+
+/* simple page-break test
+p+h1, p+h2 {
+    page-break-before: always;
+}
+*/
+
+.last_modified {
+	display: block;
+	text-align: right;
+	font-size: 80%;
+	font-style: italic;
+}
+
+/* Note that the url is usually printed by the browser anyway */
+.ext, .title, .url {
+	display: none;
+}
+
+a {
+	color: black;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+a:after	{
+	position: relative;
+	left: 6px;
+	border-bottom: 1px solid rgb(79,129,189);
+	content: attr(href);
+	margin-right: 12px;
+}
