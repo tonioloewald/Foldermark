@@ -1,6 +1,8 @@
 folder.mark -- The Instant CMS
 ==============================
 
+**Note**: development has moved to the nodejs version. See the README in the nodejs folder for more details.
+
 How to use folder.mark in Five Minutes
 --------------------------------------
 
