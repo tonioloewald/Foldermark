@@ -204,17 +204,17 @@ function stream_response( res, file_path, content_type ){
     res.writeHead(200, {'Content-Type': content_type});
 }
 
-function render_response( res, file_path ){
-	var text;
-	var html;
+function render_response( res, file_path, content_type ){
+    if( content_type === undefined ){
+        content_type = "text/html";
+    }
 	
-	fs.readFile(file_path, 'utf8', function (err, data) {
+	fs.readFile(file_path, function (err, data) {
 		if (err) {
 			fatal_error(res, err, 'could not render ' + file_path);
 		} else {
-			html = converter.makeHtml( data );
-			res.writeHead(200, {'Content-Type': 'text/html' });
-			res.end( html );
+			res.writeHead(200, {'Content-Type': content_type });
+			res.end( data );
 		}
 	});	
 }
@@ -325,6 +325,7 @@ function handle_file_request( req, res, file_path, file_type ){
 	}
 	if( stream_type ){
 		stream_response( res, file_path, stream_type );
+		// render_response( res, file_path, stream_type );
 	}
 }
 
