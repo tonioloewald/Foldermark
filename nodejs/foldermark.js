@@ -39,6 +39,12 @@ var nav_tree_locks = 0;
 var chokidar = require('chokidar');
 var nav_watcher = false;
 
+function log(){
+    if( config === undefined || config.verbose ){
+        console.log.apply(console, arguments);
+    }
+}
+
 function fatal_error( res, err, msg ){
 	if( msg == undefined ){
 		msg = 'not specified';
@@ -142,7 +148,7 @@ function save_text_file( path, content ){
         if(err) {
             console.log(err);
         } else {
-            // console.log(path, 'saved');
+            log(path, 'saved');
         }
     });
 }
@@ -206,8 +212,8 @@ function nav_tree_cleanup( callback ){
     nav_tree_locks--;
     
     if( nav_tree_locks === 0 ){
-        console.log( "Nav Tree Built" );
-        // console.log( JSON.stringify( nav_root, false, 2) );
+        log( "Nav Tree Built" );
+        log( JSON.stringify( nav_root, false, 2) );
         if( typeof callback === 'function' ){
             callback();
         }
@@ -219,12 +225,12 @@ function nav_tree_cleanup( callback ){
                 switch( event ){
                     case "add":
                         if( nav_root.path_list.indexOf( path ) === -1 ){
-                            console.log( "ADDED", path );
+                            log( "ADDED", path );
                         }
                         break;
                     case "unlink":
                         if( nav_root.path_list.indexOf( path ) > -1 ){
-                            console.log( "DELETED", path );
+                            log( "DELETED", path );
                         }
                         break;
                 }
@@ -351,10 +357,6 @@ function render_page_data( res, page_path ){
 function handle_file_request( req, res, file_path, file_type ){
     var stream_type = false;
 	switch( file_type ){
-	    case '.fm':
-	        console.log( 'page data request', file_path );
-	        render_page_data( res, file_path );
-	        break;
 		case '.pdf':
 			stream_type = 'application/pdf';
 			break;
@@ -448,17 +450,18 @@ function setup_web_server(){
         var request_type = path.extname( request_path );
         var path_index = nav_root.name_list.indexOf(pathname);
     
+        log( 'request', pathname, request_path );
         if( !request_type ){
             render_index_page( res, request_url.pathname );
         } else {
             if( path_index > -1 ){
-                // console.log( "cached path for", pathname, 'at', nav_root.path_list[path_index] );
+                log( "cached path for", pathname, 'at', nav_root.path_list[path_index] );
                 handle_file_request( req, res, nav_root.path_list[path_index], request_type );
             } else {
                 // TODO: add /lib/ files to the path_list so this async call isn't needed
                 fs.exists( request_path, function( found ){
                     if( found ){
-                        // console.log( "found", pathname, 'at', request_path);
+                        log( "found", pathname, 'at', request_path);
                         // we can simply add the new path because we know pathname wasn't found
                         nav_root.path_list.push( request_path );
                         nav_root.name_list.push( pathname );
@@ -470,8 +473,8 @@ function setup_web_server(){
                 }); 
             }
         }
-    }).listen(config.port, '127.0.0.1');
-    console.log('Server running at http://127.0.0.1:' + config.port + '/');
+    }).listen(config.port);
+    console.log('Server listening on port ' + config.port + '/');
 }
 
 fs.readFile('config.json', function(err, data){
@@ -480,7 +483,7 @@ fs.readFile('config.json', function(err, data){
     }
     
     config = JSON.parse( data );
-    // console.log( JSON.stringify( config, false, 2 ) );
+    log( JSON.stringify( config, false, 2 ) );
     nav_root = {
         path: "",
         name: config.name,

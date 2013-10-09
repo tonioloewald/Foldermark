@@ -13,5 +13,6 @@
 		"/fm/lib/scripts/showdown.js",
 		"/fm/lib/scripts/fm.js"
 	],
-	"port" : 8124
+	"port" : 8124,
+	"verbose": true
 }
