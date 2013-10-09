@@ -415,6 +415,7 @@ fs.readFile('config.json', function(err, data){
                 fs.exists( request_path, function( found ){
                     if( found ){
                         console.log( "found", pathname, 'at', request_path);
+                        // we can simply add the new path because we know pathname wasn't found
                         nav_root.path_list.push( request_path );
                         nav_root.name_list.push( pathname );
                         handle_file_request( req, res, request_path, request_type );
