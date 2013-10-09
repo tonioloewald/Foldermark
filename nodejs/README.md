@@ -15,9 +15,9 @@ Key Improvements
 * All content is served *statically*
 * Streaming (nodejs) all content is automagically streamed where appropriate
 * **TODO**: **Edit your site online** effortlessly (even on mobile devices)
-* **TODO**: inheritance
-* **TODO**: detect file changes outside foldermark's purview and update internal indices automagically (changes are now
-  being detected with chokidar, but changes are not yet being made).
+* Inheritance. **TODO**: stop-inherit and overriding inheritance.
+* Detect file changes outside foldermark's purview and **TODO**: update internal indices automagically (changes are now
+  being detected with chokidar, but corresponding adjustments to the nav_tree are not being made yet).
 
 Setup
 -----
@@ -90,7 +90,7 @@ If no match of either kind is found, in the case of a **page**, the path will be
 Inheritance
 -----------
 
-Any file whose name has the word .inherit before its type extension, e.g. foo.inherit.js or bar.inherit.css or baz.inherit.png, will be loaded into all subpages.
+Any file or folder whose name has the word .inherit before its type extension (or the end of its name), e.g. foo.inherit.js or bar.inherit.css or baz.inherit, will be loaded into all subpages.
 
 To block an inherited file from an ancestor page, you can override it with another identically named file or cancel it using .stop-inherit (e.g. foo.stop-inherit.js will prevent foo.inherit.js from being inherited).
 
