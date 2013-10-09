@@ -1,31 +1,14 @@
 /*
-	folder.mark ported to node.js
-	Copyright (c)2011 Tonio Loewald
+	folder.mark 2.0
+	Copyright (c)2011-13 Tonio Loewald
 	
 	Very much a work-in-progress
 	
 	To do
 	-----
-	
-	figure out what else needs to be on this to do list
-	wrap contents in divs/spans for css to work on
-	wrap css declarations in media types
-	nav menu
-	breadcrumbs
-	render non-html/markdown elements of pages
 	document differences between php and node.js versions
-	decide which is canonical
 	deploy node.js version via heroku?
 	dropbox integration?
-	redo CSS to produce one of those trendy horizontal layouts ;-)
-	
-	Optimization Possibilities
-	--------------------------
-	
-	reduce number of synchronous calls in page renderer (?)
-	cache url lookups (because it's so easy to do in node.js)
-	cache page assembly metadata
-	cache rendered pages
 */
 
 var http = require('http');
@@ -56,6 +39,7 @@ function fuzz_path( path ){
 
 function build_nav_tree( page, callback ){
     nav_tree_locks++;
+    console.log(page.path, nav_tree_locks);
     
     function child_adder( child ){
         return function( err, stats ){
@@ -79,6 +63,7 @@ function build_nav_tree( page, callback ){
 
 	fs.readdir( config.content_root + page.path, function( err, files ){
 	    if( err || !files.length ){
+	        nav_tree_cleanup( callback );
 	        return;
 	    }
 	    
@@ -155,6 +140,8 @@ function sitemap( node ){
 
 function nav_tree_cleanup( callback ){
     nav_tree_locks--;
+    console.log(nav_tree_locks);
+    
     if( nav_tree_locks === 0 ){
         console.log( "Nav Tree Built" );
         console.log( JSON.stringify( nav_root, false, 2) );
