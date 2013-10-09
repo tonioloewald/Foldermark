@@ -2,7 +2,7 @@
     less.js configuration file -- must run before less.js is loaded
 */
 var less = {
-    env: "development", // or "production"
+    env: "development", // development | production (no spam)
     async: true,        // load imports async
     fileAsync: false,   // load imports async when in a page under
                         // a file protocol
@@ -12,6 +12,6 @@ var less = {
     relativeUrls: false,// whether to adjust url's to be relative
                         // if false, url's are already relative to the
                         // entry less file
-    rootpath: ":/a.com/"// a path to add on to the start of every url
-                        //resource
+    rootpath: ""        // a path to add on to the start of every url
+                        // resource
 };
