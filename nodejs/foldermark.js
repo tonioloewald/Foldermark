@@ -1,5 +1,7 @@
-/*
+/**
 	folder.mark 2.0
+	===============
+	
 	Copyright (c)2011-13 Tonio Loewald
 	
 	Very much a work-in-progress
@@ -156,7 +158,7 @@ function write_page_data( page ){
                 save_text_file(config.content_root + page.parts[i].path + '/fm.json', JSON.stringify(page.parts[i].parts));
             }
         }
-        save_text_file(config.content_root + page.path + '/fm.json', JSON.stringify(parts))
+        save_text_file(config.content_root + page.path + '/fm.json', JSON.stringify(parts));
     }
     
     if( page.pages ){
