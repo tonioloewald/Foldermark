@@ -6,7 +6,7 @@ var fm = {
         var self = this;
         
         window.onpopstate = function(e){
-            console.log( 'popping', e.state );
+            // console.log( 'popping', e.state );
             if(e.state){
                 fm.loadPage( e.state.url, true );
             }
@@ -73,11 +73,11 @@ var fm = {
                 new_url = loc.protocol + '//' + loc.host + url;
         
             if( !doNotPush ){
-                console.log( 'pushing', new_url );
+                // console.log( 'pushing', new_url );
                 window.history.pushState({ url: url }, '', new_url);
             }
             
-            console.log(url);
+            // console.log('received part', url);
             self.current_page = url;
             self.makeBreadcrumbs();
             
@@ -158,13 +158,12 @@ var fm = {
                             });
                         break;
                     case "css":
-                        // CSS
+                        // CSS -- note that adding the links to the head and then removing them later is mysteriously broken
                         var link = $('<link>').attr({
                             'rel': 'stylesheet',
                             'type': 'text/css',
                             'href': part
                         }).prependTo('body');
-                        console.log(link);
                         break;
                     case "xml":
                     case "json":
