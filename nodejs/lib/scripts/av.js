@@ -30,7 +30,7 @@
 */
 
 var av = {
-	player_url : 'av.swf',
+	player_url : '/fm/lib/scripts/av.swf',
 	player_settings : {
 		'allowScriptAccess' : 'always',
 		'allowFullScreen' : 'true',

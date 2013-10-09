@@ -380,6 +380,9 @@ function handle_file_request( req, res, file_path, file_type ){
 		case '.html':
 			stream_type = 'text/html';
 			break;
+		case '.swf':
+		    stream_type = 'application/x-shockwave-flash';
+		    break;
 		case '.txt':
 		case '.text':
 		case '.md':
