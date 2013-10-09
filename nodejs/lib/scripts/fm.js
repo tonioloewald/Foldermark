@@ -67,7 +67,6 @@ var fm = {
             return;
         }
         
-        
         $.getJSON( url + 'fm.json', function(parts){
             var content = $('#content'),
                 loc = window.location,
@@ -86,6 +85,7 @@ var fm = {
             $('#nav a[href="' + url + '"]').addClass('current');
             
             content.empty();
+            $('body link').remove();
             
             for( var i = 0; i < parts.length; i++ ){
                 var part = parts[i],
