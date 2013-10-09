@@ -9,6 +9,11 @@
 	document differences between php and node.js versions
 	deploy node.js version via heroku?
 	dropbox integration?
+	
+	Dependencies
+	------------
+	
+	chokidar -- npm install chokidar
 */
 
 var http = require('http');
@@ -18,6 +23,8 @@ var url = require('url');
 var config;
 var nav_root;
 var nav_tree_locks = 0;
+var chokidar = require('chokidar');
+var nav_watcher = false;
 
 function fatal_error( res, err, msg ){
 	if( msg == undefined ){
@@ -39,17 +46,31 @@ function fuzz_path( path ){
 
 function build_nav_tree( page, callback ){
     nav_tree_locks++;
-    console.log(page.path, nav_tree_locks);
+    
+    if( nav_watcher ){
+        nav_watcher.close();
+        nav_watcher = false;
+    }
     
     function child_adder( child ){
         return function( err, stats ){
             if( err || !stats ){
                 // TODO: error handling
             } else if ( stats.isDirectory() ){
-                if( page.pages === undefined ){
-                    page.pages = [];
+                if( 
+                    child.name.indexOf('.') > 0 
+                    || child.name === 'images'
+                ){
+                    if( page.parts === undefined ){
+                        page.parts = [];
+                    }
+                    page.parts.push( child );
+                } else {
+                    if( page.pages === undefined ){
+                        page.pages = [];
+                    }
+                    page.pages.push( child );
                 }
-                page.pages.push( child );
                 build_nav_tree( child, callback );
             } else {
                 if( page.parts === undefined ){
@@ -67,7 +88,7 @@ function build_nav_tree( page, callback ){
 	        return;
 	    }
 	    
-	    var i, file, child, path, full_path;
+	    var i, file, child, path, full_path, path_name;
 	    
 	    files.sort();
 	    for( i = 0; i < files.length; i++ ){
@@ -75,7 +96,13 @@ function build_nav_tree( page, callback ){
 	        if( file.substr(0,1) !== '.' ){
 	            path = page.path + '/' + file;
 	            full_path = config.content_root + path;
-                nav_root.path_list[ fuzz_path( path ) ] = full_path;
+	            path_name = fuzz_path( path );
+	            if( nav_root.name_list.indexOf( path_name ) === -1 ){
+                    nav_root.path_list.push( full_path );
+                    nav_root.name_list.push( fuzz_path( path ) );
+	            } else {
+	                console.warn( 'Duplicate path_name', path_name, full_path, nav_root.path_list[ nav_root.name_list.indexOf( path_name ) ] );
+	            }
 	            if( file !== 'fm.json' && file !== 'fm-sitemap.json' ){
                     child = {
                         path: path,
@@ -102,15 +129,17 @@ function save_text_file( path, content ){
 }
 
 function write_page_data( page ){
-    var path = config.content_root + page.path + '/fm.json',
-        i,
+    var i,
         parts = [];
 
     if( page.parts ){
         for( i = 0; i < page.parts.length; i++ ){
             parts.push( fuzz_path( page.parts[i].path ) );
+            if( page.parts[i].parts ){
+                save_text_file(config.content_root + page.parts[i].path + '/fm.json', JSON.stringify(page.parts[i].parts));
+            }
         }
-        save_text_file(path, JSON.stringify(parts))
+        save_text_file(config.content_root + page.path + '/fm.json', JSON.stringify(parts))
     }
     
     if( page.pages ){
@@ -140,7 +169,6 @@ function sitemap( node ){
 
 function nav_tree_cleanup( callback ){
     nav_tree_locks--;
-    console.log(nav_tree_locks);
     
     if( nav_tree_locks === 0 ){
         console.log( "Nav Tree Built" );
@@ -150,8 +178,23 @@ function nav_tree_cleanup( callback ){
         }
         
         write_page_data( nav_root );
-        
         save_text_file( config.content_root + '/fm-sitemap.json', JSON.stringify( sitemap( nav_root) ) );
+        if( !nav_watcher ){
+            nav_watcher = watch_folder( config.content_root, "add,unlink", function( path, stat, event ){
+                switch( event ){
+                    case "add":
+                        if( nav_root.path_list.indexOf( path ) === -1 ){
+                            console.log( "ADDED", path );
+                        }
+                        break;
+                    case "unlink":
+                        if( nav_root.path_list.indexOf( path ) > -1 ){
+                            console.log( "DELETED", path );
+                        }
+                        break;
+                }
+            });
+        }
     } else if ( nav_tree_locks < 0 ){
         console.error( "Negative nav tree locks???", nav_tree_locks );
     }
@@ -204,6 +247,26 @@ function render_response( res, file_path, content_type ){
 			res.end( data );
 		}
 	});	
+}
+
+/*
+    Events are add (file added), change (file modified), unlink (file deleted/removed), error (self-explanatory)
+*/
+function watch_folder(path_to_watch, events, callback){
+    var watcher = chokidar.watch(path.normalize(path_to_watch), {ignored: /\/\.[^\.]/, persistent: true}),
+        i;
+
+    events = events.split(/[,\s]/);
+    
+    for( i = 0; i < events.length; i++ ){
+        (function(event){
+            watcher.on(events[i], function(path, stat){
+                callback.call( this, path, stat, event );
+            });
+        })(events[i]);
+    }
+    
+    return watcher;
 }
 
 /*
@@ -326,7 +389,8 @@ fs.readFile('config.json', function(err, data){
     nav_root = {
         path: "",
         name: config.name,
-        path_list: {}
+        name_list: [],
+        path_list: []
     };
     
     build_nav_tree( nav_root );
@@ -336,16 +400,16 @@ fs.readFile('config.json', function(err, data){
         var pathname = fuzz_path( request_url.pathname );
         var request_path = pathname.substr(0,8) === '/fm/lib/' 
                             ? pathname.substr(4)
-                            : config.content_root + path.normalize( pathname );
+                            : config.content_root + request_url.pathname;
         var request_type = path.extname( request_path );
-        var actual_path;
+        var path_index = nav_root.name_list.indexOf(pathname);
         
         if( !request_type ){
             render_index_page( res, request_url.pathname );
         } else {
-            if( actual_path = nav_root.path_list[ pathname ] ){
-                console.log( "cached path for", pathname, 'at', actual_path );
-                handle_file_request( req, res, actual_path, request_type );
+            if( path_index > -1 ){
+                console.log( "cached path for", pathname, 'at', nav_root.path_list[path_index] );
+                handle_file_request( req, res, nav_root.path_list[path_index], request_type );
             } else {
                 // TODO: add /lib/ files to the path_list so this async call isn't needed
                 fs.exists( request_path, function( found ){

@@ -93,7 +93,7 @@ var fm = {
                     type = part.match(/\.([\w\-_]*)$/),
                     node;
                 
-                type = type === 'null' ? undefined : type[1];
+                type = type === null ? undefined : type[1];
                 switch( type ){
                     case "gif":
                     case "jpg":
