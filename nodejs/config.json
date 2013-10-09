@@ -8,6 +8,7 @@
 	"js" : [
 		"/fm/lib/scripts/jquery-1.10.2.min.js",
 		"/fm/lib/scripts/av.js",
+		"/fm/lib/scripts/less-config.js",
 		"/fm/lib/scripts/less.js",
 		"/fm/lib/scripts/showdown.js",
 		"/fm/lib/scripts/fm.js"
