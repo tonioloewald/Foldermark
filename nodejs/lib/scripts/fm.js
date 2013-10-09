@@ -86,6 +86,9 @@ var fm = {
             $('#nav a[href="' + url + '"]').addClass('current');
             
             content.empty();
+            
+            // rip stuff out of headers
+            $('.temporary-page').remove();
             // console.log(parts);
             
             for( var i = 0; i < parts.length; i++ ){
@@ -95,12 +98,16 @@ var fm = {
                 
                 type = type === null ? undefined : type[1];
                 switch( type ){
+                    /* images */
                     case "gif":
                     case "jpg":
                     case "jpeg":
                     case "png":
                         content.append('<div><img src="' + part + '"></div>');
                         break;
+                    /* markdown */
+                    case "text":
+                    case "txt":
                     case "md":
                     case "markdown":
                         node = $('<div>').appendTo(content);
@@ -114,24 +121,7 @@ var fm = {
                             });
                         })(node);
                         break;
-                    case "xml":
-                    case "json":
-                        // nothing -- assume data for plugin
-                        break;
-                    case "js":
-                            $.ajax({
-                                url: part,
-                                success: function(script){
-                                    var source = '/* fragment script: ' + part + ' */\n' + script.text,
-                                        fn = new Function(['parts'], source);
-                                        fn.call($('body'), parts);
-                                    try {
-                                    } catch(e){
-                                        console.error('Exception thrown in fragment script:', part);
-                                    }
-                                }
-                            });
-                        break;
+                    /* markup */
                     case "xhtml":
                     case "htm":
                     case "html":
@@ -155,6 +145,35 @@ var fm = {
                                 }
                             });
                         })(node);
+                        break;
+                    /* javascript */
+                    case "js":
+                            $.ajax({
+                                url: part,
+                                success: function(script){
+                                    var source = '/* fragment script: ' + part + ' */\n' + script.text,
+                                        fn = new Function(['parts'], source);
+                                        fn.call($('body'), parts);
+                                    try {
+                                    } catch(e){
+                                        console.error('Exception thrown in fragment script:', part);
+                                    }
+                                }
+                            });
+                        break;
+                    case "css":
+                        // CSS
+                        var link = $('<link>').attr({
+                            'class': 'temporary-page',
+                            'rel': 'stylesheet',
+                            'type': 'text/css',
+                            'href': part
+                        }).prependTo('body');
+                        console.log(link);
+                        break;
+                    case "xml":
+                    case "json":
+                        // nothing -- assume it's data meant for plugin
                         break;
                     case "pdf":
                     case "zip":
@@ -193,7 +212,7 @@ var fm = {
             parts.pop();
         }
         
-        console.log(parts, this.current_page);
+        // console.log(parts, this.current_page);
         for( var i = 0; i < parts.length; i++ ){
             url += parts[i] + '/';
             name = i === 0 ? this.sitemap.name : parts[i];
