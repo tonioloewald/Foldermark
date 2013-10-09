@@ -87,10 +87,6 @@ var fm = {
             
             content.empty();
             
-            // rip stuff out of headers
-            $('.temporary-page').remove();
-            // console.log(parts);
-            
             for( var i = 0; i < parts.length; i++ ){
                 var part = parts[i],
                     type = part.match(/\.([\w\-_]*)$/),
@@ -164,7 +160,6 @@ var fm = {
                     case "css":
                         // CSS
                         var link = $('<link>').attr({
-                            'class': 'temporary-page',
                             'rel': 'stylesheet',
                             'type': 'text/css',
                             'href': part
