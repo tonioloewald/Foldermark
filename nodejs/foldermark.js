@@ -55,6 +55,12 @@ function fuzz_path( path ){
     return path.replace(/[^\/]\w*_/g, '').replace(/\s+/g, '-').toLowerCase();
 }
 
+function part_sorter( A, B ){
+    return A.path === B.path
+           ? 0
+           : ( A.path > B.path ? 1 : -1 );
+}
+
 function build_nav_tree( page, callback ){
     nav_tree_locks++;
     
@@ -169,6 +175,7 @@ function write_page_data( page ){
                 } else {
                     page.pages[i].parts = [].concat(parts);
                 }
+                page.pages[i].parts.sort( part_sorter );
             }
             write_page_data( page.pages[i] );
         }

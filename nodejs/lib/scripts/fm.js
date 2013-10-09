@@ -114,6 +114,25 @@ var fm = {
                             });
                         })(node);
                         break;
+                    case "xml":
+                    case "json":
+                        // nothing -- assume data for plugin
+                        break;
+                    case "js":
+                            $.ajax({
+                                url: part,
+                                success: function(script){
+                                    var source = '/* fragment script: ' + part + ' */\n' + script.text,
+                                        fn = new Function(['parts'], source);
+                                        fn.call($('body'), parts);
+                                    try {
+                                    } catch(e){
+                                        console.error('Exception thrown in fragment script:', part);
+                                    }
+                                }
+                            });
+                        break;
+                    case "xhtml":
                     case "htm":
                     case "html":
                         node = $('<div>').appendTo(content);
