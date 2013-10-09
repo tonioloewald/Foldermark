@@ -6,9 +6,20 @@
 	
 	To do
 	-----
-	document differences between php and node.js versions
-	deploy node.js version via heroku?
-	dropbox integration?
+	
+	* stop-inherit
+	* refactoring
+	    * Nav class
+        * Page class
+        * handle_file_request in its own file (with stream_response etc.)
+        * error handlers in their own file
+	
+	Lower Priority
+	--------------
+	
+	* document differences between php and node.js versions
+	* deploy node.js version via heroku?
+	* dropbox integration?
 	
 	Dependencies
 	------------
@@ -123,7 +134,7 @@ function save_text_file( path, content ){
         if(err) {
             console.log(err);
         } else {
-            console.log(path, 'saved');
+            // console.log(path, 'saved');
         }
     });
 }
@@ -143,7 +154,22 @@ function write_page_data( page ){
     }
     
     if( page.pages ){
+        // inheritance -- figure out what needs to be inherited
+        parts = [];
+        for( i = page.parts.length - 1; i >= 0; i-- ){
+            if( page.parts[i].path.match(/\.inherit(\.|$)/) !== null ){
+                parts.push( page.parts[i] );
+            }
+        }
         for( i = 0; i < page.pages.length; i++ ){
+            // inheritance -- if there's anything to inherit then pass it on
+            if( parts.length ){
+                if( page.pages[i].parts ){
+                    page.pages[i].parts = page.pages[i].parts.concat(parts);
+                } else {
+                    page.pages[i].parts = [].concat(parts);
+                }
+            }
             write_page_data( page.pages[i] );
         }
     }
@@ -172,7 +198,7 @@ function nav_tree_cleanup( callback ){
     
     if( nav_tree_locks === 0 ){
         console.log( "Nav Tree Built" );
-        console.log( JSON.stringify( nav_root, false, 2) );
+        // console.log( JSON.stringify( nav_root, false, 2) );
         if( typeof callback === 'function' ){
             callback();
         }
@@ -335,6 +361,12 @@ function handle_file_request( req, res, file_path, file_type ){
 		case '.js':
 			stream_type = 'application/javascript';
 			break;
+		case '.xml':
+		    stream_type = 'application/xml';
+		    break;
+		case '.xhtml':
+		    stream_type = 'application/xhtml+xml';
+		    break;
 		case '.htm':
 		case '.html':
 			stream_type = 'text/html';
@@ -355,15 +387,27 @@ function handle_file_request( req, res, file_path, file_type ){
 			stream_type = 'image/png';
 			break;
 		case '.mp4':
+		case '.m4v':
 			stream_type = 'video/mp4';
 			break;
+		case '.ogg':
+		    stream_type = 'audio/ogg';
+		    break;
+		case '.vorbis':
+		    stream_type = 'audio/vorbis';
+		    break;
+		case '.aif':
+		case '.aiff':
+		    stream_type = 'audio/x-aiff';
+		    break;
+		case '.wav':
+		    stream_type = 'audio/vnd.wav';
+		    break;
 		case '.mp3':
 			stream_type = 'audio/mpeg';
 			break;
 		case '.mov':
 		case '.qt':
-		case '.mp4':
-		case '.m4v':
 			stream_type = 'video/quicktime';
 			break;
 		case '.css':
@@ -379,22 +423,7 @@ function handle_file_request( req, res, file_path, file_type ){
 	}
 }
 
-fs.readFile('config.json', function(err, data){
-    if( err ){
-        throw err;
-    }
-    
-    config = JSON.parse( data );
-    console.log( JSON.stringify( config, false, 2 ) );
-    nav_root = {
-        path: "",
-        name: config.name,
-        name_list: [],
-        path_list: []
-    };
-    
-    build_nav_tree( nav_root );
-    
+function setup_web_server(){
     http.createServer( function( req, res ){
         var request_url = url.parse( req.url, true );
         var pathname = fuzz_path( request_url.pathname );
@@ -403,30 +432,47 @@ fs.readFile('config.json', function(err, data){
                             : config.content_root + request_url.pathname;
         var request_type = path.extname( request_path );
         var path_index = nav_root.name_list.indexOf(pathname);
-        
+    
         if( !request_type ){
             render_index_page( res, request_url.pathname );
         } else {
             if( path_index > -1 ){
-                console.log( "cached path for", pathname, 'at', nav_root.path_list[path_index] );
+                // console.log( "cached path for", pathname, 'at', nav_root.path_list[path_index] );
                 handle_file_request( req, res, nav_root.path_list[path_index], request_type );
             } else {
                 // TODO: add /lib/ files to the path_list so this async call isn't needed
                 fs.exists( request_path, function( found ){
                     if( found ){
-                        console.log( "found", pathname, 'at', request_path);
+                        // console.log( "found", pathname, 'at', request_path);
                         // we can simply add the new path because we know pathname wasn't found
                         nav_root.path_list.push( request_path );
                         nav_root.name_list.push( pathname );
                         handle_file_request( req, res, request_path, request_type );
                     } else {
                         console.log(request_path, 'not found');
-				        nonfatal_error( res, 404,  'File Not Found (' + request_url.pathname + ')' );
+                        nonfatal_error( res, 404,  'File Not Found (' + request_url.pathname + ')' );
                     }
                 }); 
             }
         }
     }).listen(config.port, '127.0.0.1');
     console.log('Server running at http://127.0.0.1:' + config.port + '/');
+}
+
+fs.readFile('config.json', function(err, data){
+    if( err ){
+        throw err;
+    }
+    
+    config = JSON.parse( data );
+    // console.log( JSON.stringify( config, false, 2 ) );
+    nav_root = {
+        path: "",
+        name: config.name,
+        name_list: [],
+        path_list: []
+    };
+    
+    build_nav_tree( nav_root, setup_web_server);
 });
 
