@@ -398,6 +398,9 @@ function handle_file_request( req, res, file_path, file_type ){
 		case '.png':
 			stream_type = 'image/png';
 			break;
+	    case '.ico':
+	        stream_type = 'image/x-icon';
+	        break;
 		case '.mp4':
 		case '.m4v':
 			stream_type = 'video/mp4';
