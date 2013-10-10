@@ -49,6 +49,8 @@ var fm = {
                 .appendTo('#home');
             
             nav.empty().append( render_page_link( sitemap ) );
+            
+            this.updateNav();
         });
     },
     loadPage: function(url, doNotPush){
@@ -79,10 +81,7 @@ var fm = {
             
             // console.log('received part', url);
             self.current_page = url;
-            self.makeBreadcrumbs();
-            
-            $('#nav a').removeClass('current');
-            $('#nav a[href="' + url + '"]').addClass('current');
+            self.updateNav();
             
             content.empty();
             $('body link').remove();
@@ -193,7 +192,8 @@ var fm = {
             av.auto();
         });
     },
-    makeBreadcrumbs: function(){
+    updateNav: function(){
+        // Update breadcrumps
         var breadcrumbs = $('<div id="breadcrumbs">'),
             parts,
             url = '',
@@ -219,5 +219,9 @@ var fm = {
         
         $('#head #breadcrumbs').remove();
         breadcrumbs.appendTo('#head');
+        
+        // Show position in nav tree
+        $('#nav a').removeClass('current');
+        $('#nav a[href="' + url + '"]').addClass('current');
     }
 }
