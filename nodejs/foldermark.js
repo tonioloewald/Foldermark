@@ -38,6 +38,7 @@ var nav_root;
 var nav_tree_locks = 0;
 var chokidar = require('chokidar');
 var nav_watcher = false;
+var nav_tree_dirty = false;
 
 function log(){
     if( config === undefined || config.verbose ){
@@ -69,13 +70,8 @@ function part_sorter( A, B ){
            : ( A.path > B.path ? 1 : -1 );
 }
 
-function build_nav_tree( page, callback ){
+function build_nav_tree( root, page, callback ){
     nav_tree_locks++;
-    
-    if( nav_watcher ){
-        nav_watcher.close();
-        nav_watcher = false;
-    }
     
     function child_adder( child ){
         return function( err, stats ){
@@ -96,20 +92,20 @@ function build_nav_tree( page, callback ){
                     }
                     page.pages.push( child );
                 }
-                build_nav_tree( child, callback );
+                build_nav_tree( root, child, callback );
             } else {
                 if( page.parts === undefined ){
                     page.parts = [];
                 }
                 page.parts.push( child );
             }
-	        nav_tree_cleanup( callback );
+	        nav_tree_cleanup( root, callback );
         };
     }
 
 	fs.readdir( config.content_root + page.path, function( err, files ){
 	    if( err || !files.length ){
-	        nav_tree_cleanup( callback );
+	        nav_tree_cleanup( root, callback );
 	        return;
 	    }
 	    
@@ -122,11 +118,11 @@ function build_nav_tree( page, callback ){
 	            path = page.path + '/' + file;
 	            full_path = config.content_root + path;
 	            path_name = fuzz_path( path );
-	            if( nav_root.name_list.indexOf( path_name ) === -1 ){
-                    nav_root.path_list.push( full_path );
-                    nav_root.name_list.push( fuzz_path( path ) );
+	            if( root.name_list.indexOf( path_name ) === -1 ){
+                    root.path_list.push( full_path );
+                    root.name_list.push( fuzz_path( path ) );
 	            } else {
-	                console.warn( 'Duplicate path_name', path_name, full_path, nav_root.path_list[ nav_root.name_list.indexOf( path_name ) ] );
+	                console.warn( 'Duplicate path_name', path_name, full_path, root.path_list[ root.name_list.indexOf( path_name ) ] );
 	            }
 	            if( file !== 'fm.json' && file !== 'fm-sitemap.json' ){
                     child = {
@@ -139,7 +135,7 @@ function build_nav_tree( page, callback ){
 	        }
 	    }
 	    
-	    nav_tree_cleanup( callback );
+	    nav_tree_cleanup( root, callback );
 	});
 }
 
@@ -208,29 +204,31 @@ function sitemap( node ){
     return map;
 }
 
-function nav_tree_cleanup( callback ){
+function nav_tree_cleanup( root, callback ){
     nav_tree_locks--;
     
     if( nav_tree_locks === 0 ){
         log( "Nav Tree Built" );
-        log( JSON.stringify( nav_root, false, 2) );
+        log( JSON.stringify( root, false, 2) );
         if( typeof callback === 'function' ){
             callback();
         }
         
-        write_page_data( nav_root );
-        save_text_file( config.content_root + '/fm-sitemap.json', JSON.stringify( sitemap( nav_root) ) );
+        write_page_data( root );
+        save_text_file( config.content_root + '/fm-sitemap.json', JSON.stringify( sitemap( root ) ) );
         if( !nav_watcher ){
             nav_watcher = watch_folder( config.content_root, "add,unlink", function( path, stat, event ){
                 switch( event ){
                     case "add":
-                        if( nav_root.path_list.indexOf( path ) === -1 ){
+                        if( root.path_list.indexOf( path ) === -1 ){
                             log( "ADDED", path );
+                            nav_tree_dirty = true;
                         }
                         break;
                     case "unlink":
-                        if( nav_root.path_list.indexOf( path ) > -1 ){
+                        if( root.path_list.indexOf( path ) > -1 ){
                             log( "DELETED", path );
+                            nav_tree_dirty = true;
                         }
                         break;
                 }
@@ -450,32 +448,57 @@ function setup_web_server(){
         var request_type = path.extname( request_path );
         var path_index = nav_root.name_list.indexOf(pathname);
     
-        log( 'request', pathname, request_path );
         if( !request_type ){
+            log( 'index:', pathname );
             render_index_page( res, request_url.pathname );
         } else {
             if( path_index > -1 ){
-                log( "cached path for", pathname, 'at', nav_root.path_list[path_index] );
+                log( "cached path:", pathname, 'at', nav_root.path_list[path_index] );
                 handle_file_request( req, res, nav_root.path_list[path_index], request_type );
             } else {
                 // TODO: add /lib/ files to the path_list so this async call isn't needed
                 fs.exists( request_path, function( found ){
                     if( found ){
-                        log( "found", pathname, 'at', request_path);
+                        log( "found:", pathname, 'at', request_path);
                         // we can simply add the new path because we know pathname wasn't found
                         nav_root.path_list.push( request_path );
                         nav_root.name_list.push( pathname );
                         handle_file_request( req, res, request_path, request_type );
                     } else {
-                        console.log(request_path, 'not found');
+                        console.log('not found:', request_path);
                         nonfatal_error( res, 404,  'File Not Found (' + request_url.pathname + ')' );
                     }
                 }); 
             }
         }
     }).listen(config.port);
-    console.log('Server listening on port ' + config.port + '/');
+    console.log('Server listening on port:', config.port);
 }
+
+function build_site_index( callback ){    
+    console.log( '[re]building site index' );
+    var start_time = Date.now();
+    var new_nav_root = {
+        path: "",
+        name: config.name,
+        name_list: [],
+        path_list: []
+    };
+    nav_tree_dirty = false;
+    build_nav_tree(new_nav_root, new_nav_root, function(){
+        nav_root = new_nav_root;
+        console.log( 'site index built', Date.now() - start_time, 'ms' );
+        if( typeof callback === 'function' ){
+            callback();
+        }
+    });
+}
+
+setInterval( function(){
+    if( nav_tree_dirty ){
+        build_site_index();
+    }
+}, 1000);
 
 fs.readFile('config.json', function(err, data){
     if( err ){
@@ -484,13 +507,7 @@ fs.readFile('config.json', function(err, data){
     
     config = JSON.parse( data );
     log( JSON.stringify( config, false, 2 ) );
-    nav_root = {
-        path: "",
-        name: config.name,
-        name_list: [],
-        path_list: []
-    };
     
-    build_nav_tree( nav_root, setup_web_server);
+    build_site_index( setup_web_server );
 });
 
