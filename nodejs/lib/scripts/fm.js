@@ -50,8 +50,20 @@ var fm = {
             
             nav.empty().append( render_page_link( sitemap ) );
             
-            this.updateNav();
+            self.updateNav();
         });
+    },
+    newDiv: function(title, part, type, target, html){
+        var div = $('<div>').attr({
+                        'data-part': part,
+                        'data-title': title
+                    })
+                    .addClass(type)
+                    .appendTo(target);
+        if( html ){
+            div.html( html );
+        }
+        return div;
     },
     loadPage: function(url, doNotPush){
         var converter = this.converter,
@@ -89,7 +101,8 @@ var fm = {
             for( var i = 0; i < parts.length; i++ ){
                 var part = parts[i],
                     type = part.match(/\.([\w\-_]*)$/),
-                    node;
+                    node,
+                    title = part.split('/').pop().split('.').shift();
                 
                 type = type === null ? undefined : type[1];
                 switch( type ){
@@ -98,14 +111,13 @@ var fm = {
                     case "jpg":
                     case "jpeg":
                     case "png":
-                        content.append('<div><img src="' + part + '"></div>');
+                        self.newDiv(title, part, 'image', content, '<img alt="' + title + '" src="' + part + '">');
                         break;
                     /* markdown */
                     case "text":
                     case "txt":
                     case "md":
                     case "markdown":
-                        node = $('<div>').appendTo(content);
                         (function(node){
                             $.ajax({
                                 url: part,
@@ -114,13 +126,12 @@ var fm = {
                                     node.html( converter.makeHtml(text) );
                                 }
                             });
-                        })(node);
+                        })(self.newDiv(title, part, 'markdown', content));
                         break;
                     /* markup */
                     case "xhtml":
                     case "htm":
                     case "html":
-                        node = $('<div>').appendTo(content);
                         (function(node){
                             $.ajax({
                                 url: part,
@@ -139,7 +150,7 @@ var fm = {
                                     });
                                 }
                             });
-                        })(node);
+                        })(self.newDiv(title, part, 'html', content));
                         break;
                     /* javascript */
                     case "js":
@@ -172,19 +183,19 @@ var fm = {
                     case "zip":
                     case "dmg":
                     case 'msi':
-                        content.append('<div>Download <a href="' + part + '">' + part + '</a></div>');
+                        self.newDiv(title, part, 'download', content, '<p>Download <a href="' + part + '">' + title + '</a></p>');
                         break;
                     case "mov":
                     case "mp4":
                     case "qt":
                     case "m4v":
-                        content.append('<div><video controls src="' + part + '"></div>');
+                        self.newDiv(title, part, 'video', content, '<video controls src="' + part + '">');
                         break;
                     case 'aif':
                     case 'aiff':
                     case 'wav':
                     case 'mp3':
-                        content.append('<div><audio controls src="' + part + '"></div>');
+                        self.newDiv(title, part, 'audio', content, '<audio controls src="' + part + '">');
                         break;
                 }
             }
@@ -193,7 +204,7 @@ var fm = {
         });
     },
     updateNav: function(){
-        // Update breadcrumps
+        // Update breadcrumbs
         var breadcrumbs = $('<div id="breadcrumbs">'),
             parts,
             url = '',

@@ -1,23 +1,23 @@
 Folder.mark 2.0
 ===============
 
-Note that the features described here are the implementation target, and those marked TODO (and possibly others) are not yet implemented..
+Note that the features described here are the implementation target, and those marked TODO (and possibly others) are not yet implemented.
 
-Currently the nodejs implementation is closer to the spec than the PHP version.
+Currently the nodejs implementation is closer to the *original* spec than the PHP version.
 
 Key Improvements
 ----------------
 
-* Rewritten for **nodejs** (**TODO**: will back port as much as possible to **PHP**)
+* Rewritten for **nodejs** (**TODO**: will back port as much as possible to **PHP**).
 * More work off-loaded to client-side (Javascript) means that the server-side implementation is both simpler and lighter-weight.
 * Easily extensible via *Javascript* plugins
 * Does not require a database
 * All content is served *statically*
-* Streaming (nodejs) all content is automagically streamed where appropriate
+* (nodejs only) all content is automagically streamed where appropriate.
 * **TODO**: **Edit your site online** effortlessly (even on mobile devices)
-* Inheritance. **TODO**: stop-inherit and overriding inheritance.
-* Detect file changes outside foldermark's purview and **TODO**: update internal indices automagically (changes are now
-  being detected with chokidar, but corresponding adjustments to the nav_tree are not being made yet).
+* Inheritance. **TODO**: *stop-inherit* and *overriding* inheritance.
+* (nodejs only) *content changes are automatically detected* and trigger an automatic index rebuild. This is currently crude (the entire index is rebuilt rather than just the affected subtree, but it's very fast and implementing anything finer-grained updates can be left for a long time in the future.)
+* **TODO** automatic server-side LESS compilation.
 
 Setup
 -----
@@ -32,7 +32,7 @@ Core Concepts
 
 Every web page is served as the same page ("effectively index.html") but with a different internal URL. Once a page is loaded, content is loaded via AJAX and the browser history is updated in code (so history should Just Work).
 
-**The site URL is requested as fm.json inside the page directory** (e.g. "/foo/bar/" is requested as "/foo/bar/fm.json").
+**The page part list is requested as fm.json inside the page directory** (e.g. the part list for "/foo/bar/" is requested as "/foo/bar/fm.json").
 
 **fm.json comprises an array of parts of the page**. The page then renders the content on the client-side.
 
@@ -40,6 +40,8 @@ Every web page is served as the same page ("effectively index.html") but with a 
         <string>, // e.g. "/foo/bar/image.png"
         …
     ]
+
+**TODO**: make the part list more sophisticated, including original **title** (preserving capitals and spaces), **modification data**, and **file size** (e.g. for downloads).
 
 The page also (once) makes a call requesting the **site map** (/site/root/fm-sitmap.json). The page uses this to render navigation links.
 
@@ -55,8 +57,10 @@ The page also (once) makes a call requesting the **site map** (/site/root/fm-sit
                     …
                 ]
             }, …
-        ]
+        ]                
     }
+
+**TODO** include **title** of each page (preserving spaces and capitalization).
 
 Fuzzy Link Matching
 -------------------
@@ -72,7 +76,7 @@ E.g.
 
 * important page -> important-page
 * 100_test case.jpg -> test-case.jpg
-* test case.inherit.hidden.jpg -> test-case.jpg
+* main.media=print.inherit.css -> main.css
 * 666_FOO -> foo
 
 When attempting to serve a page (or, in nodejs, a content file) the object whose reduced filename is **exactly matched**, if it exists, will be served. E.g. /10_foo/20_bar baz -> /foo/bar-baz -- a page whose reduced name exactly matches this will be served; it could be /10_foo/20_bar baz, but it could also be /37_foo/bar-baz.
@@ -134,7 +138,7 @@ Admin Access is controlled by a simple JSON file named users.json (this file is 
         }
     ]
 
-## The **privileges** are:
+## The *privileges* are:
 
 * **access-control** user can create users and grant write privileges
 * **global-edit** user can modify any page
