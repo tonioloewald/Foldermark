@@ -39,6 +39,7 @@ var nav_tree_locks = 0;
 var chokidar = require('chokidar');
 var nav_watcher = false;
 var nav_tree_dirty = false;
+var files_to_ignore = /^\..*|^favicon\..*/;
 
 function log(){
     if( config === undefined || config.verbose ){
@@ -114,7 +115,9 @@ function build_nav_tree( root, page, callback ){
 	    files.sort();
 	    for( i = 0; i < files.length; i++ ){
 	        file = files[i];
-	        if( file.substr(0,1) !== '.' ){
+	        if( file.match(files_to_ignore) ){
+	            log('Ignoring', file);
+	        } else {
 	            path = page.path + '/' + file;
 	            full_path = config.content_root + path;
 	            path_name = fuzz_path( path );
@@ -149,6 +152,20 @@ function save_text_file( path, content ){
     });
 }
 
+function remove(path){
+    fs.exists(path, function(exists){
+        if(exists){
+            fs.unlink(path, function(err){
+                if( !err ){
+                    log('Removed', path);
+                } else {
+                    console.error('Error unlinking', err, path);
+                }
+            });
+        }
+    });
+}
+
 function write_page_data( page ){
     var i,
         parts = [];
@@ -158,17 +175,24 @@ function write_page_data( page ){
             parts.push( fuzz_path( page.parts[i].path ) );
             if( page.parts[i].parts ){
                 save_text_file(config.content_root + page.parts[i].path + '/fm.json', JSON.stringify(page.parts[i].parts));
+            } else {
+                remove(config.content_root + page.parts[i].path + '/fm.json');
             }
         }
         save_text_file(config.content_root + page.path + '/fm.json', JSON.stringify(parts));
+    } else {
+        // file delete
+        remove( config.content_root + page.path + '/fm.json' );
     }
     
     if( page.pages ){
         // inheritance -- figure out what needs to be inherited
         parts = [];
-        for( i = page.parts.length - 1; i >= 0; i-- ){
-            if( page.parts[i].path.match(/\.inherit(\.|$)/) !== null ){
-                parts.push( page.parts[i] );
+        if( page.parts ){
+            for( i = page.parts.length - 1; i >= 0; i-- ){
+                if( page.parts[i].path.match(/\.inherit(\.|$)/) !== null ){
+                    parts.push( page.parts[i] );
+                }
             }
         }
         for( i = 0; i < page.pages.length; i++ ){
