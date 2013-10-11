@@ -210,7 +210,7 @@ var fm = {
             url = '',
             name;
         
-        if( this.current_page === '/' ){
+        if( this.current_page === undefined || this.current_page === '/' ){
             parts = [''];
         } else {
             parts = this.current_page.split('/');
