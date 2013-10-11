@@ -210,6 +210,7 @@ var fm = {
             url = '',
             name;
         
+        // if the sitemap loads before the initial page load, current_page will be undefined
         if( this.current_page === undefined || this.current_page === '/' ){
             parts = [''];
         } else {
