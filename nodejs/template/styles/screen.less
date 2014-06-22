@@ -95,7 +95,7 @@ h6 {
 	font-size: 100%;
 }
 
-#content strong {
+.content strong {
 	color: #426;
 }
 
@@ -113,7 +113,7 @@ blockquote h1, blockquote h2 {
 	margin-bottom: -30px;
 }
 
-#nav {
+.nav {
 	font-size: 80%;
 	line-height: 1.5em;
 	background-color: @mid_color * 0.5 + @page_color * 0.5;
@@ -126,11 +126,11 @@ blockquote h1, blockquote h2 {
 	color: #000;
 }
 
-#nav form, #nav p {
+.nav form, .nav p {
 	margin: 5px;
 }
 
-#nav h1, #nav h2, #nav h3 {
+.nav h1, .nav h2, .nav h3 {
 	text-align: center;
 	color: @inverse_text_color;
 	padding: 2px 4px;
@@ -155,14 +155,14 @@ a:active {
 	background-color: @inverse_text_color;
 }
 
-#nav a, form a {
+.nav a, form a {
 	color: @inverse_text_color;
 	background-color: @mid_color;
 	border: 0;
 	-webkit-transition: all 0.25s linear;
 }
 
-#nav a, form a, #nav .current {
+.nav a, form a, .nav .current {
 	text-decoration: none;
 	text-transform: capitalize;
 	font-weight: bold;
@@ -172,7 +172,7 @@ a:active {
 	margin: 5px 10px;
 }
 
-#nav .current, #nav .current:hover {
+.nav .current, .nav .current:hover {
 	color: @mid_color;
 	background-color: @page_color;
 	margin-right: 0;
@@ -180,17 +180,17 @@ a:active {
 	opacity: 1.0;
 }
 
-#nav a:hover, form a:hover {
+.nav a:hover, form a:hover {
 	color: @inverse_text_color;
 	background-color: @bright_color;
 	opacity: 0.8;
 }
 
-#nav a:active, form a:active {
+.nav a:active, form a:active {
 	background-color: @dark_color;
 }
 
-#nav ul ul {
+.nav ul ul {
 	padding-left: 8px;
 }
 
@@ -212,11 +212,11 @@ hr {
 	border-top: 1px solid @bg_color;
 }
 
-#nav hr {
+.nav hr {
 	margin: 0 5px;
 }
 
-#head {
+.head {
 	font-weight: bold;
 	color: #000;
 	background-color: @mid_color;
@@ -229,23 +229,23 @@ hr {
 	margin: 0;
 }
 
-#head div {
+.head div {
 	padding: 0;
 	position: absolute;
 }
 
-#breadcrumbs {
+.breadcrumbs {
 	left: 50%;
 	margin-left: -200px;
 	position: relative;
 	top: 10px;
 }
 
-#breadcrumba a, #breadcrumbs span {
+.breadcrumbs a, .breadcrumbs span {
     border-radius: 2px 2px 0 0;
 }
 
-#breadcrumbs .current {
+.breadcrumbs .current {
 	color: @mid_color;
 	background-color: @page_color;
 	padding: 2px 6px 5px 6px;
@@ -253,12 +253,12 @@ hr {
 	position: relative;
 }
 
-#breadcrumbs a+.current {
+.breadcrumbs a+.current {
     padding-left: 17px;
 	margin-left: 10px;
 }
 
-#breadcrumbs a+.current:before {
+.breadcrumbs a+.current:before {
     content: " ";
     position: absolute;
     top: 0;
@@ -269,7 +269,7 @@ hr {
     border-left: 11px solid @page_color * 0.25 + @mid_color * 0.75;
 }
 
-#breadcrumbs a {
+.breadcrumbs a {
 	color: @inverse_text_color;
 	text-decoration: none;
 	border: 0;
@@ -277,16 +277,16 @@ hr {
 	background-color: @page_color * 0.25 + @mid_color * 0.75;
 }
 
-#breadcrumbs a:hover {
+.breadcrumbs a:hover {
 	color: @mid_color;
 	background-color: @page_color * 0.5 + @mid_color * 0.5;
 }
 
-#breadcrumbs a:active {
+.breadcrumbs a:active {
 	color: @inverse_text_color;
 }
 
-#content {
+.content {
 	background-color: @page_color;
 	padding: 4px 10px 0 10px;
 	position: absolute;
@@ -318,32 +318,32 @@ ul li {
 	list-style-type: square;
 }
 
-#content p, #content pre, #content form, {
+.content p, .content pre, .content form, {
 	margin-left: 10px;
 }
 
-#content img, #content video, #content audio {
+.content img, .content video, .content audio {
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
-	max-width: 500px;
+	max-width: 100%;
 }
 
-#content span.page > img, #content span.page > video, #content span.page > audio  {
+.content span.page > img, .content span.page > video, .content span.page > audio  {
 	margin-top: 10px;
 }
 
-#content span.page > video, #content span.page > audio  {
+.content span.page > video, .content span.page > audio  {
 	margin-top: 10px;
 	width: 560px;
 	background-color: @inverse_text_color;
 }
 
-#content span.page > video {
+.content span.page > video {
 	height: 420px;
 }
 
-#content blockquote p {
+.content blockquote p {
 	margin-left: 0;
 }
 
@@ -358,7 +358,7 @@ code {
 	padding: 2px 4px;
 }
 
-#content pre {
+.content pre {
 	padding: 10px;
 	margin-right: 10px;
 }
@@ -470,12 +470,12 @@ div.ad a:hover {
 	display: inline;
 }
 
-#nav ul {
+.nav ul {
 	padding: 0;
 	margin: 0;
 }
 
-#nav li {
+.nav li {
 	list-style: none;
 	padding: 0;
 }
@@ -518,7 +518,7 @@ div.ad a:hover {
 	display: none;
 }
 
-#home a {
+.home a {
 	position: absolute;
 	left: 0;
 	right: 0;
@@ -538,7 +538,7 @@ div.ad a:hover {
 	font-weight: bold;
 }
 
-#home a:hover {
+.home a:hover {
 	background-color: @bright_color * 0.8;
 }
 

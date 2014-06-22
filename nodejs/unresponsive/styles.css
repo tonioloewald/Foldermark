@@ -1,0 +1,218 @@
+body {
+    background-color: #222;
+    font-family: "Helvetica Neue", Helvetica, Sans-serif;
+    font-weight: 200;
+    font-size: 24px;
+    margin: 0;
+    padding: 0;
+}
+
+.hidden {
+    display: none;
+}
+div.section {
+    padding: 10px 0;
+    text-align: center;
+}
+div.section > div {
+    max-width: 840px;
+    padding: 0 20px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+}
+img, video, audio {
+    display: block;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+    padding: 10px 0;
+}
+div.small img {
+    max-width: 100%;
+}
+div.verydark {
+    color: #eee;
+    background-color: #222;
+}
+div.dark {
+    color: #eee;
+    background-color: #444;
+}
+div.light {
+    color: #444;
+    background-color: #eee;
+}
+div.medium {
+    color: #eee;
+    background-color: #888;
+}
+div.sunken {
+    box-shadow: inset 0px 2px 4px 0 rgba(0,0,0,0.5),
+                inset 0px -1px 1px 0 rgba(255,255,255,0.25);
+}
+div.transparent {
+    background: transparent;
+}
+div.translucent {
+    background-color: rgba(64,64,64,0.5);
+}
+
+a {
+    text-decoration: none;
+    cursor: pointer;
+}
+a:hover {
+    border-bottom: 1px solid white;
+}
+a:active {
+    background-color: rgba(255,255,255,0.5);
+}
+
+a.current {
+    opacity: 0.5;
+}
+
+a.current:hover {
+    border: 0;
+}
+
+div.medium a,
+div.verydark a, 
+div.dark a {
+    color: white;
+}
+div.light a:hover {
+    border-bottom: 1px solid black;
+}
+div.light a:active {
+    background-color: rgba(0,0,0,0.5);
+}
+div.light a {
+    color: black;
+}
+
+div.header {
+}
+
+div.huge {
+    font-size: 150%;
+}
+
+div.big {
+}
+
+.image-backdrop {
+    background-image: url(sky.jpg); 
+    background-attachment:fixed;
+}
+
+div.section div.small {
+    display: inline-block;
+    font-size: 100%;
+    max-width: 400px;
+    padding: 0 20px;
+    margin: 0;
+    vertical-align: top;
+}
+
+div.section > div > form {
+    background-color: rgba(0,0,0,0.1);
+    padding: 10px;
+    font-size: 20px;
+}
+
+.button,
+button {
+    border-radius: 5px;
+    background-color: rgba(0,0,0,0.1);
+    border: 0;
+    font-size: 20px;
+    font-family: Helvetica Neue, Helvetica, Sans-serif;
+    font-weight: 400;
+    color: black;
+    padding: 4px 8px;
+}
+
+input {
+    font-size: 20px;
+    font-family: Helvetica Neue, Helvetica, Sans-serif;
+    font-weight: 200;
+    border: 0;
+    padding: 2px 4px;
+}
+
+.button:active,
+button:active {
+    background-color: rgba(0,0,0,0.5);
+}
+
+.button:active,
+.button:hover {
+    border: 0;
+}
+
+div.medium input,
+div.dark input,
+div.verydark input,
+div.medium button,
+div.dark button,
+div.verydark button,
+div.medium .button,
+div.dark .button,
+div.verydark .button {
+    color: white;
+    background-color: rgba(255,255,255,0.1);
+}
+div.medium button:active,
+div.dark button:active,
+div.verydark button:active,
+div.medium .button:active,
+div.dark .button:active,
+div.verydark .button:active {
+    background-color: rgba(255,255,255,0.5);
+}
+
+.nav > ul {
+    display: inline-block;
+    text-align: left;
+}
+
+.nav ul {
+    list-style-type: none;
+    padding-left: 20px;
+}
+
+ul.nav {
+    vertical-align: top;
+    display: inline-block;
+    width: auto;
+    max-width: 33%;
+    padding: 2px 8px;
+    text-align: left;
+}
+ul.nav li {
+    list-style: none;
+    padding: 4px 0;
+}
+
+a.nav-toggle {
+    float: right;
+}
+
+h1, h2, h3, h4, h5, h6, b, strong, th {
+    font-weight: 400;
+}
+input:invalid {
+    border: 1px solid red;
+}
+.login {
+    text-align: center;
+}
+.login table {
+    display: inline-block;
+}
+th[colspan] {
+    text-align: center;
+}

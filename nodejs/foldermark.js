@@ -344,6 +344,7 @@ function watch_folder(path_to_watch, events, callback){
     </body></html>
 */
 function render_index_page( res, path ){
+    /*
     var html = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" /><title>folder.mark</title>',
         stylesheet,
         script;
@@ -369,6 +370,7 @@ function render_index_page( res, path ){
     html += '</body></html>';
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.end( html );
+    */
 }
 
 function render_page_data( res, page_path ){
@@ -466,15 +468,23 @@ function setup_web_server(){
     http.createServer( function( req, res ){
         var request_url = url.parse( req.url, true );
         var pathname = fuzz_path( request_url.pathname );
-        var request_path = pathname.substr(0,8) === '/fm/lib/' 
-                            ? pathname.substr(4)
-                            : config.content_root + request_url.pathname;
-        var request_type = path.extname( request_path );
         var path_index = nav_root.name_list.indexOf(pathname);
+        var request_path;
+        var request_type;
+        
+        if( request_url.pathname.substr(0,5) === '/_fm/' ){
+            request_path = config.lib_root + pathname.substr(4);
+        } else if( request_url.pathname.substr(0,11) === '/_template/' ){
+            request_path = config.template_root + pathname.substr(10);
+        } else {
+            request_path = config.content_root + request_url.pathname;
+        }
+        request_type = path.extname( request_path );
     
         if( !request_type ){
             log( 'index:', pathname );
-            render_index_page( res, request_url.pathname );
+            // render_index_page( res, request_url.pathname );
+            handle_file_request( req, res, config.template_root + '/index.html', '.html' );
         } else {
             if( path_index > -1 ){
                 log( "cached path:", pathname, 'at', nav_root.path_list[path_index] );

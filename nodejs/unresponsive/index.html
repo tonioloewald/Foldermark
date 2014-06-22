@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Non-Responsive-Template</title>
+	<link href="/_template/styles.css" type="text/css" rel="stylesheet">
+</head>
+<body>
+    <div class="section verydark">
+        <div class="header">
+            <span class="home"></span>
+            <a class="nav-toggle">Navigation</a>
+        </div>
+    </div>
+    <div class="templates" style="display: none;">
+        <div class="big">        
+            <div class="section dark translucent">
+                <div class="content huge">
+                </div>
+            </div>
+        </div>
+        <div class="default">
+            <div class="section medium">
+                <div class="content big">
+                </div>
+            </div>
+        </div>
+        <div class="small">
+            <div class="section light">
+                <div class="content small">        
+                </div>
+            </div>
+        </div>
+        <div class="image">
+            <img>
+        </div>
+        <div class="video">
+            <video>
+        </div>
+        <div class="audio">
+            <audio>
+        </div>
+    </div>
+    <div class="section medium sunken hidden nav nav-toggle">
+        <div class="small">
+        </div>
+    </div>
+    <div class="section dark image-backdrop">
+        <div class="content huge">
+        </div>
+    </div>
+    <div class="section dark"> 
+        <div class="small nav">
+        </div>
+        <p>
+            Non-responsive HTML5 Template that should work everywhere.<br>
+            Copyright &copy; 2014 Tonio Loewald.
+        </p>
+    </div>
+<script src="/_fm/scripts/jquery-1.10.2.min.js" type="text/javascript"></script>
+<script>
+    $('a.nav-toggle').on('click', function(){
+        $('div.nav-toggle').slideToggle();
+    });
+    $('div.nav-toggle').on('click', 'a', function(){
+        $('div.nav-toggle').hide();
+    });
+</script>
+<script src="/_fm/scripts/av.js" type="text/javascript"></script>
+<script src="/_fm/scripts/less-config.js" type="text/javascript"></script>
+<script src="/_fm/scripts/less.js" type="text/javascript"></script>
+<script src="/_fm/scripts/showdown.js" type="text/javascript"></script>
+<script src="/_fm/scripts/fm.js" type="text/javascript"></script>
+<script type="text/javascript">
+    fm.loadPage(window.location.pathname);
+</script>
+</body>
+</html>

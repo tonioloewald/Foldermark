@@ -2,6 +2,7 @@ var fm = {
     current_page: false,
     sitemap: false,
     converter: new Showdown.converter(),
+    templates: $('.templates').contents().detach(),
     initPage: function(){
         var self = this;
         
@@ -38,7 +39,7 @@ var fm = {
         }
         
         $.getJSON( '/fm-sitemap.json', function( sitemap ){
-            var nav = $('#nav');
+            var nav = $('.nav');
             
             // console.log( 'sitemap', sitemap );
             self.sitemap = sitemap;
@@ -46,7 +47,7 @@ var fm = {
             $("<a>")
                 .attr('href', '/')
                 .text(sitemap.name)
-                .appendTo('#home');
+                .appendTo('.home');
             
             nav.empty().append( render_page_link( sitemap ) );
             
@@ -82,7 +83,7 @@ var fm = {
         }
         
         $.getJSON( url + 'fm.json', function(parts){
-            var content = $('#content'),
+            var content = $('.content'),
                 loc = window.location,
                 new_url = loc.protocol + '//' + loc.host + url;
         
@@ -205,13 +206,13 @@ var fm = {
     },
     updateNav: function(){
         // Update breadcrumbs
-        var breadcrumbs = $('<div id="breadcrumbs">'),
+        var breadcrumbs = $('<div>'),
             parts,
             url = '',
             name;
         
         // if the sitemap loads before the initial page load, current_page will be undefined
-        if( this.current_page === undefined || this.current_page === '/' ){
+        if( this.current_page === false || this.current_page === undefined || this.current_page === '/' ){
             parts = [''];
         } else {
             parts = this.current_page.split('/');
@@ -229,11 +230,11 @@ var fm = {
             }
         }
         
-        $('#head #breadcrumbs').remove();
-        breadcrumbs.appendTo('#head');
+        $('.breadcrumbs').empty();
+        breadcrumbs.contents().appendTo('.breadcrumbs');
         
         // Show position in nav tree
-        $('#nav a').removeClass('current');
-        $('#nav a[href="' + url + '"]').addClass('current');
+        $('.nav a').removeClass('current');
+        $('.nav a[href="' + url + '"]').addClass('current');
     }
 }
