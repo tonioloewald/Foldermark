@@ -93,8 +93,8 @@ var av = {
 	replace_html5_video_tags : function(){
 		$('video').replaceWith(function(){
 			var src = $(this).attr('src');
-			var w = $(this).attr('width');
-			var h = $(this).attr('height');
+            var w = $(this).width();
+            var h = $(this).height();
 			return av.flash_embed( w, h, src );
 		});
 	},

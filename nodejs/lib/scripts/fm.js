@@ -74,7 +74,7 @@ var fm = {
             this.initPage();
         }
         
-        if( url.substr(-1) !== '/' ){
+        if( typeof url === 'string' && url.substr(-1) !== '/' ){
             url += '/';
         }
         
@@ -96,7 +96,7 @@ var fm = {
             self.current_page = url;
             self.updateNav();
             
-            content.empty();
+            content.empty();55669742
             $('body link').remove();
             
             for( var i = 0; i < parts.length; i++ ){
