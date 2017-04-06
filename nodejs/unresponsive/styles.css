@@ -2,7 +2,7 @@ body {
     background-color: #222;
     font-family: "Helvetica Neue", Helvetica, Sans-serif;
     font-weight: 200;
-    font-size: 24px;
+    font-size: 20px;
     margin: 0;
     padding: 0;
 }
@@ -61,6 +61,7 @@ div.translucent {
 
 a {
     text-decoration: none;
+    border-bottom: 1px solid rgba(255,255,255,0.25);
     cursor: pointer;
 }
 a:hover {
@@ -90,25 +91,21 @@ div.light a:active {
     background-color: rgba(0,0,0,0.5);
 }
 div.light a {
+    border-bottom: 1px solid rgba(0,0,0,0.25);
     color: black;
 }
 
 div.header {
 }
 
-div.huge {
+.huge > div {
     font-size: 150%;
 }
 
-div.big {
+.big > div {
 }
 
-.image-backdrop {
-    background-image: url(sky.jpg); 
-    background-attachment:fixed;
-}
-
-div.section div.small {
+.small > div {
     display: inline-block;
     font-size: 100%;
     max-width: 400px;
@@ -117,10 +114,15 @@ div.section div.small {
     vertical-align: top;
 }
 
+.image-backdrop {
+    background-image: url(sky.jpg); 
+    background-attachment:fixed;
+}
+
 div.section > div > form {
     background-color: rgba(0,0,0,0.1);
     padding: 10px;
-    font-size: 20px;
+    font-size: 80%;
 }
 
 .button,
@@ -128,7 +130,7 @@ button {
     border-radius: 5px;
     background-color: rgba(0,0,0,0.1);
     border: 0;
-    font-size: 20px;
+    font-size: 80%;
     font-family: Helvetica Neue, Helvetica, Sans-serif;
     font-weight: 400;
     color: black;
@@ -136,7 +138,7 @@ button {
 }
 
 input {
-    font-size: 20px;
+    font-size: 80%;
     font-family: Helvetica Neue, Helvetica, Sans-serif;
     font-weight: 200;
     border: 0;

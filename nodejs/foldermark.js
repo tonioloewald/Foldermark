@@ -9,24 +9,30 @@
 	To do
 	-----
 	
-	* stop-inherit
 	* refactoring
 	    * Nav class
         * Page class
         * handle_file_request in its own file (with stream_response etc.)
         * error handlers in their own file
+    * https
+    * favicon support (currently excluded from name_list)
+    * tag page parts with modification dates
+        * fm.json is currently just an array of strings; need to be objects to support this
+        * allows for considerable extensibility going forward
+    * domain routing
+	* stop-inherit
 	
 	Lower Priority
 	--------------
 	
 	* document differences between php and node.js versions
-	* deploy node.js version via heroku?
+	* deploy node.js version via heroku? digital ocean?
 	* dropbox integration?
 	
 	Dependencies
 	------------
 	
-	chokidar -- npm install chokidar
+	chokidar -- npm install chokidar // used to detect and respond to file changes
 */
 
 var http = require('http');
@@ -39,7 +45,9 @@ var nav_tree_locks = 0;
 var chokidar = require('chokidar');
 var nav_watcher = false;
 var nav_tree_dirty = false;
-var files_to_ignore = /^\..*|^favicon\..*/;
+// files that will be hidden from the page list
+var files_to_omit = /^\..*|^favicon\..*|fm.json|fm-sitemap.json$/;
+var folders_to_omit = /^\..*|images|js|lib$/;
 
 function log(){
     if( config === undefined || config.verbose ){
@@ -78,21 +86,11 @@ function build_nav_tree( root, page, callback ){
         return function( err, stats ){
             if( err || !stats ){
                 // TODO: error handling
-            } else if ( stats.isDirectory() ){
-                if( 
-                    child.name.indexOf('.') > 0 
-                    || child.name === 'images'
-                ){
-                    if( page.parts === undefined ){
-                        page.parts = [];
-                    }
-                    page.parts.push( child );
-                } else {
-                    if( page.pages === undefined ){
-                        page.pages = [];
-                    }
-                    page.pages.push( child );
+            } else if ( stats.isDirectory() ){                
+                if( page.pages === undefined ){
+                    page.pages = [];
                 }
+                page.pages.push( child );
                 build_nav_tree( root, child, callback );
             } else {
                 if( page.parts === undefined ){
@@ -115,27 +113,23 @@ function build_nav_tree( root, page, callback ){
 	    files.sort();
 	    for( i = 0; i < files.length; i++ ){
 	        file = files[i];
-	        if( file.match(files_to_ignore) ){
-	            log('Ignoring', file);
-	        } else {
-	            path = page.path + '/' + file;
-	            full_path = config.content_root + path;
-	            path_name = fuzz_path( path );
-	            if( root.name_list.indexOf( path_name ) === -1 ){
-                    root.path_list.push( full_path );
-                    root.name_list.push( fuzz_path( path ) );
-	            } else {
-	                console.warn( 'Duplicate path_name', path_name, full_path, root.path_list[ root.name_list.indexOf( path_name ) ] );
-	            }
-	            if( file !== 'fm.json' && file !== 'fm-sitemap.json' ){
-                    child = {
-                        path: path,
-                        name: fuzz_path( file )
-                    };
-                    nav_tree_locks++;
-                    fs.stat( full_path, child_adder( child ) );
-	            }
-	        }
+            path = page.path + '/' + file;
+            full_path = config.content_root + path;
+            path_name = fuzz_path( path );
+            if( root.name_list.indexOf( path_name ) === -1 ){
+                root.path_list.push( full_path );
+                root.name_list.push( fuzz_path( path ) );
+            } else {
+                console.warn( 'Duplicate path_name', path_name, full_path, root.path_list[ root.name_list.indexOf( path_name ) ] );
+            }
+            if( !file.match(files_to_omit) ){
+                child = {
+                    path: path,
+                    name: fuzz_path( file )
+                };
+                nav_tree_locks++;
+                fs.stat( full_path, child_adder( child ) );
+            }
 	    }
 	    
 	    nav_tree_cleanup( root, callback );
@@ -220,7 +214,9 @@ function sitemap( node ){
     
     if( node.pages ){
         for( i = 0; i < node.pages.length; i++ ){
-            pages.push( sitemap( node.pages[i] ) );
+            if( !node.pages[i].name.match(folders_to_omit) ){
+                pages.push( sitemap( node.pages[i] ) );
+            }
         }
         map.pages = pages;
     }

@@ -21,4 +21,5 @@ geotiles.png
 geotiles_light.png
 print.css
 star_trek.css
-nodejs/node_modules/chokidar/
+nodejs/node_modules/
+nodejs/node_modules/connect/History.md

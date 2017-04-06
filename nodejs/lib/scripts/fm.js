@@ -1,8 +1,25 @@
+/*
+    Foldermark Client-Side Code
+    ===========================
+    
+    Page Part Name
+    
+    [ <ORDERING>_ ] human-readable-name [.<CLASS>] .<TYPE>
+    
+    - Ordering is concealed by the service (it determines the order the files are placed in)
+    
+    TODO
+    ----
+    
+    Allow a page part to elect to create a new section with a specified template
+    Support "plugins" that can handle specified classes of page or sub-page
+*/
+
 var fm = {
     current_page: false,
     sitemap: false,
+    section: $('#main > .section').empty().detach(),
     converter: new Showdown.converter(),
-    templates: $('.templates').contents().detach(),
     initPage: function(){
         var self = this;
         
@@ -55,14 +72,12 @@ var fm = {
         });
     },
     newDiv: function(title, part, type, target, html){
-        var div = $('<div>').attr({
-                        'data-part': part,
-                        'data-title': title
-                    })
+        var section = this.section.clone()
                     .addClass(type)
-                    .appendTo(target);
+                    .appendTo(target),
+            div = $('<div>').appendTo(section);
         if( html ){
-            div.html( html );
+            div.html(html);
         }
         return div;
     },
@@ -83,7 +98,7 @@ var fm = {
         }
         
         $.getJSON( url + 'fm.json', function(parts){
-            var content = $('.content'),
+            var content = $('#main').empty(),
                 loc = window.location,
                 new_url = loc.protocol + '//' + loc.host + url;
         
@@ -96,14 +111,14 @@ var fm = {
             self.current_page = url;
             self.updateNav();
             
-            content.empty();55669742
             $('body link').remove();
             
             for( var i = 0; i < parts.length; i++ ){
                 var part = parts[i],
                     type = part.match(/\.([\w\-_]*)$/),
                     node,
-                    title = part.split('/').pop().split('.').shift();
+                    title = part.split('/').pop().split('.').shift(),
+                    divClass = [].concat(part.match(/\.(\w*)\.[^\.]*$/)).pop();
                 
                 type = type === null ? undefined : type[1];
                 switch( type ){
@@ -112,7 +127,7 @@ var fm = {
                     case "jpg":
                     case "jpeg":
                     case "png":
-                        self.newDiv(title, part, 'image', content, '<img alt="' + title + '" src="' + part + '">');
+                        self.newDiv(title, part, divClass || 'image', content, '<img alt="' + title + '" src="' + part + '">');
                         break;
                     /* markdown */
                     case "text":
@@ -124,10 +139,11 @@ var fm = {
                                 url: part,
                                 success: function(text){
                                     // console.log(text);
+                                    text = text.replace(/\-\-/g, '&mdash;');
                                     node.html( converter.makeHtml(text) );
                                 }
                             });
-                        })(self.newDiv(title, part, 'markdown', content));
+                        })(self.newDiv(title, part, divClass || 'markdown', content));
                         break;
                     /* markup */
                     case "xhtml":
@@ -151,7 +167,7 @@ var fm = {
                                     });
                                 }
                             });
-                        })(self.newDiv(title, part, 'html', content));
+                        })(self.newDiv(title, part, divClass || 'html', content));
                         break;
                     /* javascript */
                     case "js":
@@ -184,19 +200,19 @@ var fm = {
                     case "zip":
                     case "dmg":
                     case 'msi':
-                        self.newDiv(title, part, 'download', content, '<p>Download <a href="' + part + '">' + title + '</a></p>');
+                        self.newDiv(title, part, divClass || 'download', content, '<p>Download <a href="' + part + '">' + title + '</a></p>');
                         break;
                     case "mov":
                     case "mp4":
                     case "qt":
                     case "m4v":
-                        self.newDiv(title, part, 'video', content, '<video controls src="' + part + '">');
+                        self.newDiv(title, part, divClass || 'video', content, '<video controls src="' + part + '">');
                         break;
                     case 'aif':
                     case 'aiff':
                     case 'wav':
                     case 'mp3':
-                        self.newDiv(title, part, 'audio', content, '<audio controls src="' + part + '">');
+                        self.newDiv(title, part, divClass || 'audio', content, '<audio controls src="' + part + '">');
                         break;
                 }
             }
@@ -215,6 +231,8 @@ var fm = {
         if( this.current_page === false || this.current_page === undefined || this.current_page === '/' ){
             parts = [''];
         } else {
+            // animate scroll to top
+            $('html,body').animate({ scrollTop: 0 }, 500);
             parts = this.current_page.split('/');
             parts.pop();
         }
@@ -229,6 +247,23 @@ var fm = {
                 breadcrumbs.append( '<a href="' + url + '">' + name + '</a>' );
             }
         }
+        
+        $('title').text(name.replace(/(^|[\-_])(\w)(\w+)/g, function(match, p1, p2, p3){
+            var word = p2 + p3;
+            /*
+            non-capitalized words in titles (English) 
+            based on US Government Printing Office Style Manual
+            http://grammar.yourdictionary.com/capitalization/rules-for-capitalization-in-titles.html
+            http://www.gpo.gov/fdsys/search/pagedetails.action?granuleId=&packageId=GPO-STYLEMANUAL-2008&fromBrowse=true
+            */
+            if(!word.match(/^(a|an|the|at|by|for|in|of|on|to|up|and|as|but|it|or|nor)$/)){
+                word = p2.toUpperCase() + p3;
+            }
+            if(p1 !== ''){
+                word = ' ' + word;
+            }
+            return word;
+        }));
         
         $('.breadcrumbs').empty();
         breadcrumbs.contents().appendTo('.breadcrumbs');

@@ -2,7 +2,8 @@
     "name": "Foldermark 2.0 Test",
     "template_root": "unresponsive/",
     "lib_root": "lib/",
-    "content_root": "../../fm-test",
+    "content_root_alt": "../../fm-test",
+    "content_root": "../../projectweasel",
 	"port" : 8124,
 	"verbose": true
 }
