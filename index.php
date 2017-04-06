@@ -4,12 +4,12 @@
 		
 		For more information visit:
 		https://github.com/tonioloewald/Foldermark
-		http://foldermark.com/
+		//foldermark.com/
 	*/
 	
 	define( 
 		'APP_ROOT', 
-		'http://' . $_SERVER['HTTP_HOST'] . pathinfo( $_SERVER['SCRIPT_NAME'], PATHINFO_DIRNAME ) . '/' 
+		'//' . $_SERVER['HTTP_HOST'] . pathinfo( $_SERVER['SCRIPT_NAME'], PATHINFO_DIRNAME ) . '/' 
 	);
 	define( 'SCREEN_CSS', APP_ROOT . 'screen.css' );
 	define( 'PRINT_CSS', APP_ROOT . 'print.css' );
@@ -394,8 +394,8 @@
 		}
 		
 		function render_tail(){
-			echo '<p class="url">http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . "</p>\n";
-			echo '<div class="ad">Powered by <a href="http://foldermark.com">FolderMark</a></div>' . "\n";
+			echo '<p class="url">//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . "</p>\n";
+			echo '<div class="ad">Powered by <a href="//foldermark.com">FolderMark</a></div>' . "\n";
 			echo "</body>\n</html>";
 		}
 		
